@@ -16,9 +16,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { FolderPlus } from "lucide-react";
+import { FolderPlus, FileUp } from "lucide-react";
 import { Deck } from "@/types/StudyTypes";
-import { TextImportDialog } from "@/components/TextImportDialog";
+import ImportDeckDialog from "@/components/ImportDeckDialog";
 
 const IndexPage = () => {
   const navigate = useNavigate();
@@ -60,7 +60,12 @@ const IndexPage = () => {
         <h1 className="text-3xl font-bold">My Study Decks</h1>
         {user && (
           <div className="flex gap-2">
-            <TextImportDialog />
+            <ImportDeckDialog>
+              <Button variant="outline">
+                <FileUp className="mr-2 h-4 w-4" />
+                Import
+              </Button>
+            </ImportDeckDialog>
             <Button onClick={handleAddDeck}>
               <FolderPlus className="mr-2 h-4 w-4" /> 
               Create Deck
