@@ -22,15 +22,15 @@ export interface ParsedDeckData {
  * Wrong answer
  */
 export function parseTextToDeck(text: string): ParsedDeckData {
-  const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+  // Split by lines but keep blank lines to detect question boundaries
+  const allLines = text.split('\n').map(line => line.trim());
   
-  if (lines.length < 3) {
-    throw new Error("Invalid format: Need at least a deck title, one question, and one answer");
+  // First non-empty line is the deck title
+  const deckTitle = allLines.find(line => line.length > 0);
+  if (!deckTitle) {
+    throw new Error("Invalid format: Deck title is required");
   }
 
-  // First line is the deck title
-  const deckTitle = lines[0];
-  
   const deck: Deck = {
     id: crypto.randomUUID(),
     title: deckTitle,
@@ -42,37 +42,52 @@ export function parseTextToDeck(text: string): ParsedDeckData {
   const questions: Question[] = [];
   let currentQuestion: string | null = null;
   let currentOptions: { text: string; isCorrect: boolean }[] = [];
+  let foundTitle = false;
   
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i];
+  for (let i = 0; i < allLines.length; i++) {
+    const line = allLines[i];
     
-    // Check if this is a question line (doesn't start with * or -)
-    const isOption = line.startsWith('*') || line.startsWith('-');
+    // Skip the deck title
+    if (!foundTitle && line === deckTitle) {
+      foundTitle = true;
+      continue;
+    }
     
-    if (!isOption) {
-      // Save previous question if exists
+    // Blank line ends the current question
+    if (line.length === 0) {
       if (currentQuestion && currentOptions.length > 0) {
         const question = createQuestion(currentQuestion, currentOptions, deck.id);
         questions.push(question);
+        currentQuestion = null;
+        currentOptions = [];
       }
-      
-      // Start new question
-      currentQuestion = line;
-      currentOptions = [];
-    } else {
-      // This is an option
+      continue;
+    }
+    
+    // Check if this line is an option (starts with * or -)
+    const isMarkedOption = line.startsWith('*') || line.startsWith('-');
+    
+    if (isMarkedOption) {
+      // This is a marked option
       if (!currentQuestion) {
         throw new Error(`Found an answer before any question at line ${i + 1}`);
       }
       
       const isCorrect = line.startsWith('*');
-      const optionText = line.substring(1).trim(); // Remove the marker
+      const optionText = line.substring(1).trim();
       
       if (!optionText) {
         throw new Error(`Empty option text at line ${i + 1}`);
       }
       
       currentOptions.push({ text: optionText, isCorrect });
+    } else if (currentQuestion) {
+      // Already in a question, so this is an unmarked option
+      currentOptions.push({ text: line, isCorrect: false });
+    } else {
+      // Start a new question
+      currentQuestion = line;
+      currentOptions = [];
     }
   }
   
