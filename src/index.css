@@ -1,0 +1,126 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 215 25% 27%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 27%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 27%;
+
+    --primary: 215 45% 47%;
+    --primary-foreground: 210 20% 98%;
+
+    --secondary: 260 80% 74%;
+    --secondary-foreground: 215 25% 27%;
+
+    --muted: 210 20% 92%;
+    --muted-foreground: 215 20% 45%;
+
+    --accent: 260 80% 74%;
+    --accent-foreground: 215 25% 27%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 20% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 215 45% 47%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 215 45% 47%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 220 20% 10%;
+    --foreground: 210 20% 98%;
+
+    --card: 220 20% 13%;
+    --card-foreground: 210 20% 98%;
+
+    --popover: 220 20% 13%;
+    --popover-foreground: 210 20% 98%;
+
+    --primary: 215 45% 47%;
+    --primary-foreground: 210 20% 98%;
+
+    --secondary: 260 80% 74%; 
+    --secondary-foreground: 210 20% 98%;
+
+    --muted: 220 20% 18%;
+    --muted-foreground: 210 20% 70%;
+
+    --accent: 260 80% 74%;
+    --accent-foreground: 210 20% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 20% 98%;
+
+    --border: 220 20% 18%;
+    --input: 220 20% 18%;
+    --ring: 215 45% 47%;
+
+    --sidebar-background: 220 20% 13%;
+    --sidebar-foreground: 210 20% 98%;
+    --sidebar-primary: 215 45% 47%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 20% 18%;
+    --sidebar-accent-foreground: 210 20% 98%;
+    --sidebar-border: 220 20% 18%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .deck-card {
+    @apply bg-card text-card-foreground rounded-lg border shadow-sm transition-all hover:shadow-md;
+  }
+  
+  .subdeck-card {
+    @apply bg-card text-card-foreground rounded-md border shadow-sm transition-all hover:shadow-md;
+  }
+  
+  .question-card {
+    @apply bg-card text-card-foreground rounded-md border shadow-sm p-4;
+  }
+  
+  .option-button {
+    @apply flex w-full items-center rounded-md border p-3 text-left transition-all hover:bg-muted;
+  }
+  
+  .option-button.correct {
+    @apply border-study-success bg-green-50 hover:bg-green-100;
+  }
+  
+  .option-button.incorrect {
+    @apply border-study-error bg-red-50 hover:bg-red-100;
+  }
+  
+  .option-button.selected {
+    @apply border-primary bg-primary/10;
+  }
+}
