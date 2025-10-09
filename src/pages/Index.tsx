@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { FolderPlus } from "lucide-react";
 import { Deck } from "@/types/StudyTypes";
+import { TextImportDialog } from "@/components/TextImportDialog";
 
 const IndexPage = () => {
   const navigate = useNavigate();
@@ -58,10 +59,13 @@ const IndexPage = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">My Study Decks</h1>
         {user && (
-          <Button onClick={handleAddDeck}>
-            <FolderPlus className="mr-2 h-4 w-4" /> 
-            Create Deck
-          </Button>
+          <div className="flex gap-2">
+            <TextImportDialog />
+            <Button onClick={handleAddDeck}>
+              <FolderPlus className="mr-2 h-4 w-4" /> 
+              Create Deck
+            </Button>
+          </div>
         )}
       </div>
 
