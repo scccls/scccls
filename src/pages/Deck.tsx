@@ -46,11 +46,35 @@ const DeckPage = () => {
   const [questionScores, setQuestionScores] = useState<Record<string, number>>({});
   const [questionAttempts, setQuestionAttempts] = useState<Map<string, any[]>>(new Map());
   
+  const deck = deckId ? getDeckById(deckId) : null;
+  const subdecks = deckId ? getSubdecks(deckId) : [];
+  const questions = deckId && deck ? getQuestionsForDeck(deckId) : [];
+  const totalQuestionsCount = deckId && deck ? getTotalQuestionsCount(deckId) : 0;
+
+  useEffect(() => {
+    if (!deck || questions.length === 0) {
+      setQuestionScores({});
+      setQuestionAttempts(new Map());
+      return;
+    }
+    
+    const loadScores = async () => {
+      const ids = questions.map((q) => q.id);
+      const attemptsByQuestion = await getQuestionAttempts(ids);
+      const next: Record<string, number> = {};
+      for (const q of questions) {
+        const attempts = attemptsByQuestion.get(q.id) || [];
+        next[q.id] = calculateQuestionScore(attempts);
+      }
+      setQuestionScores(next);
+      setQuestionAttempts(attemptsByQuestion);
+    };
+    loadScores();
+  }, [deck, questions]);
+  
   if (!deckId) {
     return <div>Invalid deck ID</div>;
   }
-  
-  const deck = getDeckById(deckId);
   
   if (!deck) {
     return (
@@ -66,30 +90,6 @@ const DeckPage = () => {
       </div>
     );
   }
-  
-  const subdecks = getSubdecks(deckId);
-  const questions = getQuestionsForDeck(deckId);
-  const totalQuestionsCount = getTotalQuestionsCount(deckId);
-
-  useEffect(() => {
-    const loadScores = async () => {
-      const ids = questions.map((q) => q.id);
-      if (ids.length === 0) {
-        setQuestionScores({});
-        setQuestionAttempts(new Map());
-        return;
-      }
-      const attemptsByQuestion = await getQuestionAttempts(ids);
-      const next: Record<string, number> = {};
-      for (const q of questions) {
-        const attempts = attemptsByQuestion.get(q.id) || [];
-        next[q.id] = calculateQuestionScore(attempts);
-      }
-      setQuestionScores(next);
-      setQuestionAttempts(attemptsByQuestion);
-    };
-    loadScores();
-  }, [questions]);
 
   const getBreadcrumbChain = (currentDeck: Deck): Deck[] => {
     const chain: Deck[] = [currentDeck];
