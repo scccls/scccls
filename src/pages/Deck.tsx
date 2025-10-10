@@ -26,6 +26,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
+import { DeckInsights } from "@/components/DeckInsights";
 
 const DeckPage = () => {
   const { deckId } = useParams<{ deckId: string }>();
@@ -34,7 +35,8 @@ const DeckPage = () => {
     state, 
     getDeckById, 
     getSubdecks, 
-    getQuestionsForDeck, 
+    getQuestionsForDeck,
+    getAllQuestionsForDeck,
     dispatch,
     exportDeck,
     getTotalQuestionsCount
@@ -49,6 +51,7 @@ const DeckPage = () => {
   const deck = deckId ? getDeckById(deckId) : null;
   const subdecks = deckId ? getSubdecks(deckId) : [];
   const questions = deckId && deck ? getQuestionsForDeck(deckId) : [];
+  const allQuestions = deckId && deck ? getAllQuestionsForDeck(deckId) : [];
   const totalQuestionsCount = deckId && deck ? getTotalQuestionsCount(deckId) : 0;
 
   useEffect(() => {
@@ -287,6 +290,7 @@ const DeckPage = () => {
           >
             Edit Deck
           </Button>
+          <DeckInsights questions={allQuestions} />
           <Button 
             variant="outline" 
             size="sm" 
