@@ -246,7 +246,9 @@ const DeckPage = () => {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/">Decks</BreadcrumbLink>
+            <BreadcrumbLink asChild>
+              <Link to="/">Decks</Link>
+            </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           {breadcrumbChain.map((d, index) => (
@@ -254,7 +256,9 @@ const DeckPage = () => {
               {index < breadcrumbChain.length - 1 ? (
                 <>
                   <BreadcrumbItem>
-                    <BreadcrumbLink href={`/deck/${d.id}`}>{d.title}</BreadcrumbLink>
+                    <BreadcrumbLink asChild>
+                      <Link to={`/deck/${d.id}`}>{d.title}</Link>
+                    </BreadcrumbLink>
                   </BreadcrumbItem>
                   <BreadcrumbSeparator />
                 </>
