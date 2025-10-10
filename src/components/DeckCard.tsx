@@ -19,6 +19,7 @@ interface DeckCardProps {
   deck: Deck;
   onEdit: (deck: Deck) => void;
   onDelete: (deck: Deck, event?: React.MouseEvent) => void;
+  onDrop?: (droppedDeckId: string, targetDeckId: string) => void;
   numQuestions: number;
   numSubdecks: number;
 }
@@ -27,11 +28,13 @@ const DeckCard: React.FC<DeckCardProps> = ({
   deck,
   onEdit,
   onDelete,
+  onDrop,
   numQuestions,
   numSubdecks,
 }) => {
   const navigate = useNavigate();
   const { exportDeck, getTotalQuestionsCount } = useStudy();
+  const [isDragOver, setIsDragOver] = React.useState(false);
   
   // Get total questions count including subdecks
   const totalQuestionsCount = getTotalQuestionsCount(deck.id);
@@ -66,8 +69,50 @@ const DeckCard: React.FC<DeckCardProps> = ({
     exportDeck(deck.id);
   };
 
+  const handleDragStart = (e: React.DragEvent) => {
+    e.stopPropagation();
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", deck.id);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = "move";
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    
+    const droppedDeckId = e.dataTransfer.getData("text/plain");
+    
+    // Don't allow dropping a deck onto itself
+    if (droppedDeckId === deck.id) return;
+    
+    if (onDrop && droppedDeckId) {
+      onDrop(droppedDeckId, deck.id);
+    }
+  };
+
   return (
-    <Card className={deck.isSubdeck ? "subdeck-card" : "deck-card"} onClick={handleViewDeck}>
+    <Card 
+      className={`${deck.isSubdeck ? "subdeck-card" : "deck-card"} ${isDragOver ? "ring-2 ring-primary" : ""} cursor-move transition-all`} 
+      onClick={handleViewDeck}
+      draggable
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <CardTitle className="text-xl font-bold">{deck.title}</CardTitle>

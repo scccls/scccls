@@ -40,7 +40,7 @@ const DeckPage = () => {
     getTotalQuestionsCount
   } = useStudy();
   
-  const { deleteDeck, deleteQuestion } = useSupabaseSync(dispatch);
+  const { deleteDeck, deleteQuestion, syncDeck } = useSupabaseSync(dispatch);
   const [deckToDelete, setDeckToDelete] = useState<Deck | null>(null);
   const [questionToDelete, setQuestionToDelete] = useState<string | null>(null);
   const [questionScores, setQuestionScores] = useState<Record<string, number>>({});
@@ -211,6 +211,34 @@ const DeckPage = () => {
     }
   };
 
+  const handleDeckDrop = async (droppedDeckId: string, targetDeckId: string) => {
+    const droppedDeck = getDeckById(droppedDeckId);
+    const targetDeck = getDeckById(targetDeckId);
+    
+    if (!droppedDeck || !targetDeck) return;
+    
+    // Don't allow a deck to become a subdeck of one of its own subdecks
+    const isTargetSubdeckOfDropped = (checkDeckId: string, potentialParentId: string): boolean => {
+      const deck = getDeckById(checkDeckId);
+      if (!deck || !deck.parentId) return false;
+      if (deck.parentId === potentialParentId) return true;
+      return isTargetSubdeckOfDropped(deck.parentId, potentialParentId);
+    };
+    
+    if (isTargetSubdeckOfDropped(targetDeckId, droppedDeckId)) {
+      return;
+    }
+    
+    const updatedDeck: Deck = {
+      ...droppedDeck,
+      parentId: targetDeckId,
+      isSubdeck: true,
+    };
+    
+    dispatch({ type: "UPDATE_DECK", payload: updatedDeck });
+    await syncDeck(updatedDeck);
+  };
+
   const hasQuestions = totalQuestionsCount > 0;
 
   return (
@@ -322,6 +350,7 @@ const DeckPage = () => {
                   deck={subdeck}
                   onEdit={handleEditSubdeck}
                   onDelete={handleDeleteDeck}
+                  onDrop={handleDeckDrop}
                   numQuestions={getQuestionsForDeck(subdeck.id).length}
                   numSubdecks={getSubdecks(subdeck.id).length}
                 />
@@ -366,6 +395,7 @@ const DeckPage = () => {
                 deck={subdeck}
                 onEdit={handleEditSubdeck}
                 onDelete={handleDeleteDeck}
+                onDrop={handleDeckDrop}
                 numQuestions={getQuestionsForDeck(subdeck.id).length}
                 numSubdecks={getSubdecks(subdeck.id).length}
               />

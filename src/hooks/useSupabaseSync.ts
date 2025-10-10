@@ -20,6 +20,7 @@ export const useSupabaseSync = (
         description: deck.description || null,
         parent_id: deck.parentId,
         is_subdeck: deck.isSubdeck,
+        available_for_practice_test: deck.availableForPracticeTest || false,
       });
 
     if (error) {
