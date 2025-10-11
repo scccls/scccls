@@ -34,11 +34,12 @@ const EditDeckPage = () => {
     );
   }
 
-  const handleSubmit = async (data: { title: string; description?: string }) => {
+  const handleSubmit = async (data: { title: string; description?: string; availableForPracticeTest?: boolean }) => {
     const updatedDeck = {
       ...deck,
       title: data.title,
       description: data.description || "",
+      availableForPracticeTest: data.availableForPracticeTest ?? deck.availableForPracticeTest ?? false,
     };
 
     dispatch({ type: "UPDATE_DECK", payload: updatedDeck });
@@ -74,6 +75,7 @@ const EditDeckPage = () => {
         defaultValues={{
           title: deck.title,
           description: deck.description,
+          availableForPracticeTest: deck.availableForPracticeTest ?? false,
         }}
         isEdit
       />

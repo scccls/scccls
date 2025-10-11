@@ -16,17 +16,21 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { FolderPlus, FileQuestion, ArrowLeft, FileUp, Play, TestTube } from "lucide-react";
 import { Deck, Question } from "@/types/StudyTypes";
 import { Separator } from "@/components/ui/separator";
 import { getQuestionAttempts, calculateQuestionScore } from "@/utils/questionScoring";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
 import { DeckInsights } from "@/components/DeckInsights";
+import { calculateDeckMetrics, DeckMetrics } from "@/utils/deckMetrics";
 
 const DeckPage = () => {
   const { deckId } = useParams<{ deckId: string }>();
@@ -47,13 +51,16 @@ const DeckPage = () => {
   const [questionToDelete, setQuestionToDelete] = useState<string | null>(null);
   const [questionScores, setQuestionScores] = useState<Record<string, number>>({});
   const [questionAttempts, setQuestionAttempts] = useState<Map<string, any[]>>(new Map());
+  const [subdeckSortBy, setSubdeckSortBy] = useState<string>("name");
+  const [subdeckMetrics, setSubdeckMetrics] = useState<Map<string, DeckMetrics>>(new Map());
   
   const deck = deckId ? getDeckById(deckId) : null;
-  const subdecks = deckId ? getSubdecks(deckId) : [];
+  const rawSubdecks = deckId ? getSubdecks(deckId) : [];
   const questions = deckId && deck ? getQuestionsForDeck(deckId) : [];
   const allQuestions = deckId && deck ? getAllQuestionsForDeck(deckId) : [];
   const totalQuestionsCount = deckId && deck ? getTotalQuestionsCount(deckId) : 0;
 
+  // Load question scores
   useEffect(() => {
     if (!deck || questions.length === 0) {
       setQuestionScores({});
@@ -74,6 +81,48 @@ const DeckPage = () => {
     };
     loadScores();
   }, [deck, questions]);
+
+  // Calculate metrics for subdecks
+  useEffect(() => {
+    const calculateMetrics = async () => {
+      const metrics = new Map<string, DeckMetrics>();
+      
+      for (const subdeck of rawSubdecks) {
+        const allQuestions = getAllQuestionsForDeck(subdeck.id);
+        const questionIds = allQuestions.map(q => q.id);
+        const attemptsByQuestion = await getQuestionAttempts(questionIds);
+        const deckMetric = calculateDeckMetrics(allQuestions, attemptsByQuestion);
+        metrics.set(subdeck.id, deckMetric);
+      }
+      
+      setSubdeckMetrics(metrics);
+    };
+
+    if (rawSubdecks.length > 0) {
+      calculateMetrics();
+    }
+  }, [rawSubdecks.length]);
+
+  // Sort subdecks based on selected criteria
+  const subdecks = [...rawSubdecks].sort((a, b) => {
+    const metricsA = subdeckMetrics.get(a.id);
+    const metricsB = subdeckMetrics.get(b.id);
+
+    switch (subdeckSortBy) {
+      case "name":
+        return a.title.localeCompare(b.title);
+      case "score-low":
+        return (metricsA?.averageScore || 0) - (metricsB?.averageScore || 0);
+      case "accuracy-low":
+        return (metricsA?.accuracy || 0) - (metricsB?.accuracy || 0);
+      case "completion-low":
+        return (metricsA?.completion || 0) - (metricsB?.completion || 0);
+      case "mastery-low":
+        return (metricsA?.mastery || 0) - (metricsB?.mastery || 0);
+      default:
+        return 0;
+    }
+  });
   
   if (!deckId) {
     return <div>Invalid deck ID</div>;
@@ -181,39 +230,6 @@ const DeckPage = () => {
     exportDeck(deckId);
   };
 
-  const handleTogglePracticeTest = async (checked: boolean) => {
-    try {
-      const { error } = await supabase
-        .from("decks")
-        .update({ available_for_practice_test: checked })
-        .eq("id", deckId);
-
-      if (error) throw error;
-
-      dispatch({
-        type: "UPDATE_DECK",
-        payload: {
-          ...deck,
-          availableForPracticeTest: checked,
-        },
-      });
-
-      toast({
-        title: checked ? "Enabled for practice tests" : "Disabled for practice tests",
-        description: checked 
-          ? "This deck will now appear in practice test options."
-          : "This deck will no longer appear in practice test options.",
-      });
-    } catch (error) {
-      console.error("Error updating practice test availability:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update practice test availability.",
-        variant: "destructive",
-      });
-    }
-  };
-
   const handleDeckDrop = async (droppedDeckId: string, targetDeckId: string) => {
     const droppedDeck = getDeckById(droppedDeckId);
     const targetDeck = getDeckById(targetDeckId);
@@ -313,22 +329,6 @@ const DeckPage = () => {
 
       <Separator />
 
-      <div className="flex items-center justify-between p-4 border rounded-lg">
-        <div>
-          <Label htmlFor="practice-test-toggle" className="cursor-pointer">
-            Available for Practice Tests
-          </Label>
-          <p className="text-sm text-muted-foreground">
-            Allow this deck to appear in practice test options
-          </p>
-        </div>
-        <Switch
-          id="practice-test-toggle"
-          checked={deck.availableForPracticeTest || false}
-          onCheckedChange={handleTogglePracticeTest}
-        />
-      </div>
-
       <div className="flex flex-wrap gap-2">
         <Button onClick={handleAddSubdeck} variant="outline">
           <FolderPlus className="mr-2 h-4 w-4" />
@@ -350,19 +350,37 @@ const DeckPage = () => {
         <TabsContent value="all" className="space-y-6">
           {subdecks.length > 0 && (
             <div className="space-y-2">
-              <h2 className="text-xl font-semibold">Subdecks</h2>
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-semibold">Subdecks</h2>
+                <Select value={subdeckSortBy} onValueChange={setSubdeckSortBy}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="name">Name</SelectItem>
+                    <SelectItem value="score-low">Score: Low to High</SelectItem>
+                    <SelectItem value="accuracy-low">Accuracy: Low to High</SelectItem>
+                    <SelectItem value="completion-low">Completion: Low to High</SelectItem>
+                    <SelectItem value="mastery-low">Mastery: Low to High</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {subdecks.map((subdeck) => (
-                <DeckCard
-                  key={subdeck.id}
-                  deck={subdeck}
-                  onEdit={handleEditSubdeck}
-                  onDelete={handleDeleteDeck}
-                  onDrop={handleDeckDrop}
-                  numQuestions={getQuestionsForDeck(subdeck.id).length}
-                  numSubdecks={getSubdecks(subdeck.id).length}
-                />
-                ))}
+                {subdecks.map((subdeck) => {
+                  const metrics = subdeckMetrics.get(subdeck.id);
+                  return (
+                    <DeckCard
+                      key={subdeck.id}
+                      deck={subdeck}
+                      onEdit={handleEditSubdeck}
+                      onDelete={handleDeleteDeck}
+                      onDrop={handleDeckDrop}
+                      numQuestions={getQuestionsForDeck(subdeck.id).length}
+                      numSubdecks={getSubdecks(subdeck.id).length}
+                      averageScore={metrics?.averageScore}
+                    />
+                  );
+                })}
               </div>
             </div>
           )}
@@ -396,18 +414,38 @@ const DeckPage = () => {
 
         <TabsContent value="subdecks">
           {subdecks.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {subdecks.map((subdeck) => (
-              <DeckCard
-                key={subdeck.id}
-                deck={subdeck}
-                onEdit={handleEditSubdeck}
-                onDelete={handleDeleteDeck}
-                onDrop={handleDeckDrop}
-                numQuestions={getQuestionsForDeck(subdeck.id).length}
-                numSubdecks={getSubdecks(subdeck.id).length}
-              />
-              ))}
+            <div className="space-y-4">
+              <div className="flex justify-end">
+                <Select value={subdeckSortBy} onValueChange={setSubdeckSortBy}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="name">Name</SelectItem>
+                    <SelectItem value="score-low">Score: Low to High</SelectItem>
+                    <SelectItem value="accuracy-low">Accuracy: Low to High</SelectItem>
+                    <SelectItem value="completion-low">Completion: Low to High</SelectItem>
+                    <SelectItem value="mastery-low">Mastery: Low to High</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {subdecks.map((subdeck) => {
+                  const metrics = subdeckMetrics.get(subdeck.id);
+                  return (
+                    <DeckCard
+                      key={subdeck.id}
+                      deck={subdeck}
+                      onEdit={handleEditSubdeck}
+                      onDelete={handleDeleteDeck}
+                      onDrop={handleDeckDrop}
+                      numQuestions={getQuestionsForDeck(subdeck.id).length}
+                      numSubdecks={getSubdecks(subdeck.id).length}
+                      averageScore={metrics?.averageScore}
+                    />
+                  );
+                })}
+              </div>
             </div>
           ) : (
             <div className="text-center py-8">

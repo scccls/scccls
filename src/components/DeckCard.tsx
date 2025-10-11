@@ -22,6 +22,7 @@ interface DeckCardProps {
   onDrop?: (droppedDeckId: string, targetDeckId: string) => void;
   numQuestions: number;
   numSubdecks: number;
+  averageScore?: number;
 }
 
 const DeckCard: React.FC<DeckCardProps> = ({
@@ -31,6 +32,7 @@ const DeckCard: React.FC<DeckCardProps> = ({
   onDrop,
   numQuestions,
   numSubdecks,
+  averageScore,
 }) => {
   const navigate = useNavigate();
   const { exportDeck, getTotalQuestionsCount } = useStudy();
@@ -116,7 +118,13 @@ const DeckCard: React.FC<DeckCardProps> = ({
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <CardTitle className="text-xl font-bold">{deck.title}</CardTitle>
-          <DropdownMenu>
+          <div className="flex items-center gap-2">
+            {averageScore !== undefined && (
+              <Badge variant="secondary" className="text-xs">
+                Score: {averageScore.toFixed(2)}
+              </Badge>
+            )}
+            <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
                 <MoreHorizontal className="h-5 w-5" />
@@ -145,6 +153,7 @@ const DeckCard: React.FC<DeckCardProps> = ({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          </div>
         </div>
         {deck.description && (
           <CardDescription>{deck.description}</CardDescription>

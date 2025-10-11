@@ -15,11 +15,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { Deck } from "@/types/StudyTypes";
 
 const deckFormSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title is too long"),
   description: z.string().max(500, "Description is too long").optional(),
+  availableForPracticeTest: z.boolean().default(false),
 });
 
 type DeckFormData = z.infer<typeof deckFormSchema>;
@@ -42,6 +44,7 @@ const DeckForm: React.FC<DeckFormProps> = ({
     defaultValues: {
       title: "",
       description: "",
+      availableForPracticeTest: false,
       ...defaultValues,
     },
   });
@@ -83,6 +86,29 @@ const DeckForm: React.FC<DeckFormProps> = ({
                 A brief description to help remember what's in this deck.
               </FormDescription>
               <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="availableForPracticeTest"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">
+                  Available for Practice Tests
+                </FormLabel>
+                <FormDescription>
+                  Allow this deck to appear in practice test options
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
             </FormItem>
           )}
         />

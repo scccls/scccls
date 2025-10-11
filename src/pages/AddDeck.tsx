@@ -13,13 +13,14 @@ const AddDeckPage = () => {
   const { dispatch } = useStudy();
   const { syncDeck } = useSupabaseSync(dispatch);
 
-  const handleSubmit = async (data: { title: string; description?: string }) => {
+  const handleSubmit = async (data: { title: string; description?: string; availableForPracticeTest?: boolean }) => {
     const newDeck = {
       id: crypto.randomUUID(),
       title: data.title,
       description: data.description || "",
       parentId: null,
       isSubdeck: false,
+      availableForPracticeTest: data.availableForPracticeTest || false,
     };
 
     dispatch({ type: "ADD_DECK", payload: newDeck });
