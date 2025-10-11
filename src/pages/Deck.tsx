@@ -28,6 +28,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { DeckInsights } from "@/components/DeckInsights";
 import { getAllQuestionsForDeck } from "@/utils/studyUtils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const DeckPage = () => {
   const { deckId } = useParams<{ deckId: string }>();
@@ -49,12 +50,29 @@ const DeckPage = () => {
   const [questionScores, setQuestionScores] = useState<Record<string, number>>({});
   const [questionAttempts, setQuestionAttempts] = useState<Map<string, any[]>>(new Map());
   const [subdeckScores, setSubdeckScores] = useState<Map<string, number>>(new Map());
+  const [subdeckSortBy, setSubdeckSortBy] = useState<"name" | "score-low" | "score-high">("name");
   
   const deck = deckId ? getDeckById(deckId) : null;
-  const subdecks = deckId ? getSubdecks(deckId) : [];
+  const rawSubdecks = deckId ? getSubdecks(deckId) : [];
   const questions = deckId && deck ? getQuestionsForDeck(deckId) : [];
   const allQuestions = deckId && deck ? getAllQuestionsForDeck(deckId) : [];
   const totalQuestionsCount = deckId && deck ? getTotalQuestionsCount(deckId) : 0;
+
+  // Sort subdecks based on selected sort option
+  const subdecks = [...rawSubdecks].sort((a, b) => {
+    if (subdeckSortBy === "name") {
+      return a.title.localeCompare(b.title);
+    } else if (subdeckSortBy === "score-low") {
+      const scoreA = subdeckScores.get(a.id) || 0;
+      const scoreB = subdeckScores.get(b.id) || 0;
+      return scoreA - scoreB;
+    } else if (subdeckSortBy === "score-high") {
+      const scoreA = subdeckScores.get(a.id) || 0;
+      const scoreB = subdeckScores.get(b.id) || 0;
+      return scoreB - scoreA;
+    }
+    return 0;
+  });
 
   useEffect(() => {
     if (!deck || questions.length === 0) {
@@ -391,7 +409,19 @@ const DeckPage = () => {
         <TabsContent value="all" className="space-y-6">
           {subdecks.length > 0 && (
             <div className="space-y-2">
-              <h2 className="text-xl font-semibold">Subdecks</h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold">Subdecks</h2>
+                <Select value={subdeckSortBy} onValueChange={(value: any) => setSubdeckSortBy(value)}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Sort by..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="name">Name</SelectItem>
+                    <SelectItem value="score-low">Score: Low to High</SelectItem>
+                    <SelectItem value="score-high">Score: High to Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {subdecks.map((subdeck) => (
                 <DeckCard
@@ -438,7 +468,21 @@ const DeckPage = () => {
 
         <TabsContent value="subdecks">
           {subdecks.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold">Subdecks</h2>
+                <Select value={subdeckSortBy} onValueChange={(value: any) => setSubdeckSortBy(value)}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Sort by..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="name">Name</SelectItem>
+                    <SelectItem value="score-low">Score: Low to High</SelectItem>
+                    <SelectItem value="score-high">Score: High to Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {subdecks.map((subdeck) => (
               <DeckCard
                 key={subdeck.id}
@@ -451,6 +495,7 @@ const DeckPage = () => {
                 averageScore={subdeckScores.get(subdeck.id) || 0}
               />
               ))}
+            </div>
             </div>
           ) : (
             <div className="text-center py-8">
