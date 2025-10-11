@@ -27,6 +27,7 @@ import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { DeckInsights } from "@/components/DeckInsights";
+import { getAllQuestionsForDeck } from "@/utils/studyUtils";
 
 const DeckPage = () => {
   const { deckId } = useParams<{ deckId: string }>();
@@ -47,6 +48,7 @@ const DeckPage = () => {
   const [questionToDelete, setQuestionToDelete] = useState<string | null>(null);
   const [questionScores, setQuestionScores] = useState<Record<string, number>>({});
   const [questionAttempts, setQuestionAttempts] = useState<Map<string, any[]>>(new Map());
+  const [subdeckScores, setSubdeckScores] = useState<Map<string, number>>(new Map());
   
   const deck = deckId ? getDeckById(deckId) : null;
   const subdecks = deckId ? getSubdecks(deckId) : [];
@@ -74,6 +76,45 @@ const DeckPage = () => {
     };
     loadScores();
   }, [deck, questions]);
+
+  // Calculate subdeck scores
+  useEffect(() => {
+    const calculateSubdeckScores = async () => {
+      const scores = new Map<string, number>();
+      
+      for (const subdeck of subdecks) {
+        const directQuestions = getQuestionsForDeck(subdeck.id);
+        const subSubdecks = getSubdecks(subdeck.id);
+        const allSubdeckQuestions: Question[] = [
+          ...directQuestions,
+          ...subSubdecks.flatMap(sd => getQuestionsForDeck(sd.id))
+        ];
+        
+        if (allSubdeckQuestions.length === 0) {
+          scores.set(subdeck.id, 0);
+          continue;
+        }
+
+        const questionIds = allSubdeckQuestions.map(q => q.id);
+        const attemptsByQuestion = await getQuestionAttempts(questionIds);
+        
+        let totalScore = 0;
+        for (const question of allSubdeckQuestions) {
+          const attempts = attemptsByQuestion.get(question.id) || [];
+          totalScore += calculateQuestionScore(attempts);
+        }
+        
+        const averageScore = totalScore / allSubdeckQuestions.length;
+        scores.set(subdeck.id, averageScore);
+      }
+      
+      setSubdeckScores(scores);
+    };
+
+    if (subdecks.length > 0) {
+      calculateSubdeckScores();
+    }
+  }, [subdecks, getQuestionsForDeck, getSubdecks]);
   
   if (!deckId) {
     return <div>Invalid deck ID</div>;
@@ -361,6 +402,7 @@ const DeckPage = () => {
                   onDrop={handleDeckDrop}
                   numQuestions={getQuestionsForDeck(subdeck.id).length}
                   numSubdecks={getSubdecks(subdeck.id).length}
+                  averageScore={subdeckScores.get(subdeck.id) || 0}
                 />
                 ))}
               </div>
@@ -406,6 +448,7 @@ const DeckPage = () => {
                 onDrop={handleDeckDrop}
                 numQuestions={getQuestionsForDeck(subdeck.id).length}
                 numSubdecks={getSubdecks(subdeck.id).length}
+                averageScore={subdeckScores.get(subdeck.id) || 0}
               />
               ))}
             </div>
