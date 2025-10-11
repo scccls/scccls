@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useStudy } from "@/contexts/StudyContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,17 +16,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { FolderPlus } from "lucide-react";
 import { Deck } from "@/types/StudyTypes";
-import { getQuestionAttempts, calculateQuestionScore } from "@/utils/questionScoring";
-import { getAllQuestionsForDeck } from "@/utils/studyUtils";
 
 const IndexPage = () => {
   const navigate = useNavigate();
@@ -34,60 +25,9 @@ const IndexPage = () => {
   const { state, getSubdecks, getQuestionsForDeck, dispatch, getDeckById } = useStudy();
   const { deleteDeck, syncDeck } = useSupabaseSync(dispatch);
   const [deckToDelete, setDeckToDelete] = useState<Deck | null>(null);
-  const [sortBy, setSortBy] = useState<"name" | "score-low" | "score-high">("name");
-  const [deckScores, setDeckScores] = useState<Map<string, number>>(new Map());
 
   // Get top-level decks (those without a parent)
   const topLevelDecks = getSubdecks(null);
-
-  // Calculate average scores for all decks
-  useEffect(() => {
-    const calculateScores = async () => {
-      const scores = new Map<string, number>();
-      
-      for (const deck of topLevelDecks) {
-        const allQuestions = getAllQuestionsForDeck(state.questions, state.decks, deck.id);
-        
-        if (allQuestions.length === 0) {
-          scores.set(deck.id, 0);
-          continue;
-        }
-
-        const questionIds = allQuestions.map(q => q.id);
-        const attemptsByQuestion = await getQuestionAttempts(questionIds);
-        
-        let totalScore = 0;
-        for (const question of allQuestions) {
-          const attempts = attemptsByQuestion.get(question.id) || [];
-          totalScore += calculateQuestionScore(attempts);
-        }
-        
-        const averageScore = totalScore / allQuestions.length;
-        scores.set(deck.id, averageScore);
-      }
-      
-      setDeckScores(scores);
-    };
-
-    if (topLevelDecks.length > 0) {
-      calculateScores();
-    }
-  }, [topLevelDecks, state.questions, state.decks]);
-
-  // Sort decks based on selected option
-  const sortedDecks = [...topLevelDecks].sort((a, b) => {
-    if (sortBy === "name") {
-      return a.title.localeCompare(b.title);
-    } else if (sortBy === "score-low") {
-      const scoreA = deckScores.get(a.id) || 0;
-      const scoreB = deckScores.get(b.id) || 0;
-      return scoreA - scoreB;
-    } else {
-      const scoreA = deckScores.get(a.id) || 0;
-      const scoreB = deckScores.get(b.id) || 0;
-      return scoreB - scoreA;
-    }
-  });
 
   const handleAddDeck = () => {
     navigate("/add-deck");
@@ -145,26 +85,12 @@ const IndexPage = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">My Study Decks</h1>
-        <div className="flex items-center gap-3">
-          {topLevelDecks.length > 0 && (
-            <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Sort by..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="name">Name</SelectItem>
-                <SelectItem value="score-low">Score: Low to High</SelectItem>
-                <SelectItem value="score-high">Score: High to Low</SelectItem>
-              </SelectContent>
-            </Select>
-          )}
-          {user && (
-            <Button onClick={handleAddDeck}>
-              <FolderPlus className="mr-2 h-4 w-4" /> 
-              Create Deck
-            </Button>
-          )}
-        </div>
+        {user && (
+          <Button onClick={handleAddDeck}>
+            <FolderPlus className="mr-2 h-4 w-4" /> 
+            Create Deck
+          </Button>
+        )}
       </div>
 
       {!user ? (
@@ -191,7 +117,7 @@ const IndexPage = () => {
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {sortedDecks.map((deck) => (
+          {topLevelDecks.map((deck) => (
             <DeckCard
               key={deck.id}
               deck={deck}
@@ -200,7 +126,6 @@ const IndexPage = () => {
               onDrop={handleDeckDrop}
               numQuestions={getQuestionsForDeck(deck.id).length}
               numSubdecks={getSubdecks(deck.id).length}
-              averageScore={deckScores.get(deck.id) || 0}
             />
           ))}
         </div>
