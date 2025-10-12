@@ -128,6 +128,21 @@ export function studyReducer(state: StudyState, action: StudyAction): StudyState
       const exists = state.questionBank.some(q => q.id === action.payload.id);
       if (exists) return state;
       
+      // Sync with Supabase
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (user) {
+          supabase
+            .from("question_bank")
+            .upsert({
+              user_id: user.id,
+              question_id: action.payload.id,
+            })
+            .then(({ error }) => {
+              if (error) console.error("Error adding to question bank:", error);
+            });
+        }
+      });
+      
       return { 
         ...state, 
         questionBank: [...state.questionBank, action.payload] 
