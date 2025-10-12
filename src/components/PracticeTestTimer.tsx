@@ -1,8 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Timer } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
-import { formatDistanceStrict } from 'date-fns';
 
 interface PracticeTestTimerProps {
   totalSeconds: number;
@@ -11,22 +10,67 @@ interface PracticeTestTimerProps {
 
 const PracticeTestTimer: React.FC<PracticeTestTimerProps> = ({ totalSeconds, onTimeUp }) => {
   const [secondsLeft, setSecondsLeft] = useState(totalSeconds);
+  const startTimeRef = useRef<number>(Date.now());
+  const animationFrameRef = useRef<number>();
+  const onTimeUpRef = useRef(onTimeUp);
+  const hasEndedRef = useRef(false);
+  
+  // Keep onTimeUp reference current
+  useEffect(() => {
+    onTimeUpRef.current = onTimeUp;
+  }, [onTimeUp]);
+
   const progress = (secondsLeft / totalSeconds) * 100;
   
   useEffect(() => {
-    const timer = setInterval(() => {
-      setSecondsLeft(prev => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          onTimeUp();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    // Reset start time when totalSeconds changes
+    startTimeRef.current = Date.now();
+    hasEndedRef.current = false;
+    setSecondsLeft(totalSeconds);
 
-    return () => clearInterval(timer);
-  }, [totalSeconds, onTimeUp]);
+    const updateTimer = () => {
+      if (hasEndedRef.current) return;
+
+      const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
+      const remaining = Math.max(0, totalSeconds - elapsed);
+      
+      setSecondsLeft(remaining);
+
+      if (remaining <= 0 && !hasEndedRef.current) {
+        hasEndedRef.current = true;
+        onTimeUpRef.current();
+      } else if (remaining > 0) {
+        animationFrameRef.current = requestAnimationFrame(updateTimer);
+      }
+    };
+
+    // Handle visibility change to prevent timer issues when tab is inactive
+    const handleVisibilityChange = () => {
+      if (!document.hidden && !hasEndedRef.current) {
+        // Recalculate when tab becomes visible again
+        const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
+        const remaining = Math.max(0, totalSeconds - elapsed);
+        setSecondsLeft(remaining);
+        
+        if (remaining <= 0 && !hasEndedRef.current) {
+          hasEndedRef.current = true;
+          onTimeUpRef.current();
+        } else if (remaining > 0) {
+          animationFrameRef.current = requestAnimationFrame(updateTimer);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    animationFrameRef.current = requestAnimationFrame(updateTimer);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [totalSeconds]);
 
   // Format time as minutes:seconds
   const formatTime = (totalSeconds: number) => {

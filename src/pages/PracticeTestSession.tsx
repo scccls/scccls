@@ -46,10 +46,15 @@ const PracticeTestSession = () => {
       return;
     }
 
-    // Randomly select questions
-    const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
-    const selected = shuffled.slice(0, parseInt(questionCount));
-    setQuestions(selected);
+    // Only initialize questions if they haven't been set yet
+    // This prevents reshuffling when component re-renders
+    setQuestions(prev => {
+      if (prev.length > 0) return prev;
+      
+      const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
+      const selected = shuffled.slice(0, parseInt(questionCount));
+      return selected;
+    });
   }, [deckId, questionCount, getAllQuestionsForDeck, navigate]);
 
   const handleAnswer = (questionId: string, selectedOptionId: string) => {
