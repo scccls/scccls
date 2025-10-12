@@ -21,6 +21,7 @@ const PracticeTestSession = () => {
   const [showResults, setShowResults] = useState(false);
   const [incorrectIds, setIncorrectIds] = useState<string[]>([]);
   const [correctIds, setCorrectIds] = useState<string[]>([]);
+  const [unansweredIds, setUnansweredIds] = useState<string[]>([]);
   const [hasTimedEnded, setHasTimedEnded] = useState(false);
   
   // Check if this is a timed test
@@ -85,18 +86,21 @@ const PracticeTestSession = () => {
   const finishTest = () => {
     const incorrect: string[] = [];
     const correct: string[] = [];
+    const unanswered: string[] = [];
 
     // Evaluate all answers and record attempts
     questions.forEach(question => {
       const selectedOption = answers[question.id];
       if (!selectedOption) {
-        // Count unanswered as incorrect
-        incorrect.push(question.id);
-        recordQuestionAttempt(question.id, false);
+        // Unanswered - count towards score but don't track or add to bank
+        unanswered.push(question.id);
+        // NO recordQuestionAttempt() call here
       } else if (selectedOption !== question.correctOptionId) {
+        // Incorrectly answered - track and add to bank
         incorrect.push(question.id);
         recordQuestionAttempt(question.id, false);
       } else {
+        // Correctly answered - track
         correct.push(question.id);
         recordQuestionAttempt(question.id, true);
       }
@@ -104,8 +108,9 @@ const PracticeTestSession = () => {
 
     setIncorrectIds(incorrect);
     setCorrectIds(correct);
+    setUnansweredIds(unanswered);
 
-    // Add incorrect questions to question bank
+    // Add only incorrect (not unanswered) questions to question bank
     incorrect.forEach(questionId => {
       const question = questions.find(q => q.id === questionId);
       if (question && !state.questionBank.some(q => q.id === questionId)) {
@@ -122,6 +127,7 @@ const PracticeTestSession = () => {
     setShowResults(false);
     setIncorrectIds([]);
     setCorrectIds([]);
+    setUnansweredIds([]);
     setHasTimedEnded(false);
     
     // Re-shuffle questions
@@ -156,7 +162,7 @@ const PracticeTestSession = () => {
         <StudyResults
           total={questions.length}
           correct={correctIds.length}
-          incorrect={incorrectIds.length}
+          incorrect={incorrectIds.length + unansweredIds.length}
           deckId={deckId!}
           onRestart={handleRestart}
           hideBackButton={true}
@@ -167,6 +173,44 @@ const PracticeTestSession = () => {
             Return to Practice Test
           </Button>
         </div>
+
+        {unansweredIds.length > 0 && (
+          <div className="space-y-4 mt-8">
+            <h2 className="text-xl font-medium flex items-center">
+              <XCircle className="h-5 w-5 mr-2 text-amber-500" />
+              Unanswered Questions
+            </h2>
+            <div className="space-y-4">
+              {unansweredIds.map(id => {
+                const question = questions.find(q => q.id === id);
+                if (!question) return null;
+                
+                return (
+                  <div key={id} className="border rounded-md p-4 bg-amber-50">
+                    <p className="font-medium">{question.text}</p>
+                    <div className="mt-2 space-y-2">
+                      {question.options.map(option => (
+                        <div 
+                          key={option.id} 
+                          className={`p-2 rounded-md ${
+                            option.id === question.correctOptionId
+                              ? "bg-green-100 border-green-300 border"
+                              : "bg-gray-50 border border-gray-200"
+                          }`}
+                        >
+                          {option.text}
+                          {option.id === question.correctOptionId && (
+                            <span className="ml-2 text-green-500 text-sm">(Correct Answer)</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {incorrectIds.length > 0 && (
           <div className="space-y-4 mt-8">

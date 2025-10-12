@@ -67,7 +67,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 className="flex items-center"
               >
                 <BookCheck className="h-4 w-4 mr-2" />
-                Practice Test
+                Tests
               </Button>
             </Link>
             <ImportDeckDialog>
@@ -125,7 +125,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <DropdownMenuItem asChild>
                   <Link to="/practice-test" className="flex items-center">
                     <BookCheck className="h-4 w-4 mr-2" />
-                    Practice Test
+                    Tests
                   </Link>
                 </DropdownMenuItem>
                 <ImportDeckDialog>
