@@ -22,19 +22,19 @@ export const TextImportDialog = () => {
   const [previewData, setPreviewData] = useState<{ deckTitle: string; questionCount: number } | null>(null);
   const { importDeck } = useStudy();
 
-  const exampleText = `My Biology Deck
+  const exampleText = `2024 NSW Past Paper
 
-What is the powerhouse of the cell?
-* Mitochondria
-Nucleus
-Ribosome
-Golgi apparatus
+Which common type of spinal cord injury occurs when the head is sharply thrust back and the spine is arched backwards beyond its normal limit?
+Hyperflexion
+* Hyperextension
+Distraction
+Rotation
 
-What is photosynthesis?
-* The process by which plants convert light into energy
-The process of cell division
-The process of protein synthesis
-The breakdown of glucose`;
+How do you get a response in an infant?
+By rubbing the sternum with the knuckles of your hand and clapping loudly
+By tickling the feet and shouting at them
+* By placing one hand on an infant's forehead and use your other hand to gently squeeze their shoulder while talking loudly to them
+By yelling and squeezing both shoulders and hands`;
 
   const handlePreview = () => {
     setError(null);
