@@ -99,7 +99,7 @@ const PracticeTestPage = () => {
                   <TextImportDialog />
                 </div>
                 
-                {state.decks.filter(d => !d.parentId && !d.availableForPracticeTest).length === 0 ? (
+                {state.decks.filter(d => !d.parentId && d.isPastPaper).length === 0 ? (
                   <Alert>
                     <AlertTitle>No past papers available</AlertTitle>
                     <AlertDescription>
@@ -111,7 +111,7 @@ const PracticeTestPage = () => {
                     <h3 className="font-medium">Available Past Papers</h3>
                     <div className="grid gap-4">
                       {state.decks
-                        .filter(d => !d.parentId && !d.availableForPracticeTest)
+                        .filter(d => !d.parentId && d.isPastPaper)
                         .map(paper => {
                           const questionCount = state.questions.filter(q => q.deckId === paper.id).length;
                           return (

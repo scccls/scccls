@@ -19,6 +19,7 @@ export type Deck = {
   parentId: string | null; // null for top-level decks
   isSubdeck: boolean;
   availableForPracticeTest?: boolean;
+  isPastPaper?: boolean;
 };
 
 export type StudySession = {
