@@ -15,7 +15,7 @@ import { useStudy } from "@/contexts/StudyContext";
 import { parseTextToDeck, parsedDeckToJSON } from "@/utils/textToDeck";
 import { FileText, ChevronDown, AlertCircle, CheckCircle2 } from "lucide-react";
 
-export const TextImportDialog = () => {
+export const TextImportDialog = ({ isPastPaper = false }: { isPastPaper?: boolean }) => {
   const [open, setOpen] = useState(false);
   const [textInput, setTextInput] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -59,6 +59,12 @@ By yelling and squeezing both shoulders and hands`;
   const handleImport = () => {
     try {
       const parsed = parseTextToDeck(textInput);
+      
+      // Mark as past paper if needed
+      if (isPastPaper) {
+        parsed.deck.isPastPaper = true;
+      }
+      
       const jsonString = parsedDeckToJSON(parsed);
       importDeck(jsonString);
       
@@ -82,9 +88,9 @@ By yelling and squeezing both shoulders and hands`;
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Import Deck from Text</DialogTitle>
+          <DialogTitle>Import {isPastPaper ? "Past Paper" : "Deck"} from Text</DialogTitle>
           <DialogDescription>
-            Paste your questions in a simple text format and we'll convert them to a deck
+            Paste your questions in a simple text format and we'll convert them to a {isPastPaper ? "past paper" : "deck"}
           </DialogDescription>
         </DialogHeader>
 
@@ -99,7 +105,7 @@ By yelling and squeezing both shoulders and hands`;
               <div className="rounded-md bg-muted p-4 text-sm space-y-2">
                 <p className="font-medium">Format Rules:</p>
                 <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                  <li>First line is the deck title</li>
+                  <li>First line is the {isPastPaper ? "past paper" : "deck"} title</li>
                   <li>Each question starts on its own line (no special marker needed)</li>
                   <li>Mark the correct answer with an asterisk (*)</li>
                   <li>Wrong answers start with a dash (-) or no marker</li>
@@ -153,7 +159,7 @@ By yelling and squeezing both shoulders and hands`;
               Preview
             </Button>
             <Button onClick={handleImport} disabled={!previewData}>
-              Import Deck
+              Import {isPastPaper ? "Past Paper" : "Deck"}
             </Button>
           </div>
         </div>

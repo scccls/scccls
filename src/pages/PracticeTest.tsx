@@ -96,7 +96,7 @@ const PracticeTestPage = () => {
                 </p>
                 
                 <div className="flex gap-2">
-                  <TextImportDialog />
+                  <TextImportDialog isPastPaper={true} />
                 </div>
                 
                 {state.decks.filter(d => !d.parentId && d.isPastPaper).length === 0 ? (

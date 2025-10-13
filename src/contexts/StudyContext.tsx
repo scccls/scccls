@@ -255,7 +255,7 @@ export const StudyProvider = ({ children }: { children: React.ReactNode }) => {
           description: newDeck.description || null,
           parent_id: newDeck.parentId,
           is_subdeck: newDeck.isSubdeck,
-          available_for_practice_test: parsed.deck.availableForPracticeTest || false,
+          available_for_practice_test: parsed.deck.isPastPaper ? false : (parsed.deck.availableForPracticeTest || false),
         });
       }
       
