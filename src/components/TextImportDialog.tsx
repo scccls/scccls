@@ -110,15 +110,6 @@ By yelling and squeezing both shoulders and hands`;
                 <pre className="bg-background p-3 rounded text-xs overflow-x-auto whitespace-pre-wrap">
 {exampleText}
                 </pre>
-                
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setTextInput(exampleText)}
-                  className="mt-2"
-                >
-                  Use This Example
-                </Button>
               </div>
             </CollapsibleContent>
           </Collapsible>
@@ -129,7 +120,7 @@ By yelling and squeezing both shoulders and hands`;
             <Textarea
               value={textInput}
               onChange={(e) => setTextInput(e.target.value)}
-              placeholder={`${exampleText}`}
+              placeholder="Paste your deck text here..."
               className="min-h-[300px] font-mono text-sm"
             />
           </div>
