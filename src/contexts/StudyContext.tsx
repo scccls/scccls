@@ -49,7 +49,8 @@ export const StudyProvider = ({ children }: { children: React.ReactNode }) => {
           description: d.description || undefined,
           parentId: d.parent_id,
           isSubdeck: d.is_subdeck,
-          availableForPracticeTest: d.available_for_practice_test || false
+          availableForPracticeTest: d.available_for_practice_test || false,
+          isPastPaper: (d as any).is_past_paper || false
         }));
 
         dispatch({ type: "SET_DECKS", payload: decks });

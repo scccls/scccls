@@ -21,7 +21,8 @@ export const useSupabaseSync = (
         parent_id: deck.parentId,
         is_subdeck: deck.isSubdeck,
         available_for_practice_test: deck.availableForPracticeTest || false,
-      });
+        is_past_paper: deck.isPastPaper || false,
+      } as any);
 
     if (error) {
       console.error("Error syncing deck:", error);

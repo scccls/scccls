@@ -34,12 +34,13 @@ const EditDeckPage = () => {
     );
   }
 
-  const handleSubmit = async (data: { title: string; description?: string; availableForPracticeTest?: boolean }) => {
+  const handleSubmit = async (data: { title: string; description?: string; availableForPracticeTest?: boolean; isPastPaper?: boolean }) => {
     const updatedDeck = {
       ...deck,
       title: data.title,
       description: data.description || "",
       availableForPracticeTest: data.availableForPracticeTest ?? deck.availableForPracticeTest ?? false,
+      isPastPaper: data.isPastPaper ?? deck.isPastPaper ?? false,
     };
 
     dispatch({ type: "UPDATE_DECK", payload: updatedDeck });
@@ -76,6 +77,7 @@ const EditDeckPage = () => {
           title: deck.title,
           description: deck.description,
           availableForPracticeTest: deck.availableForPracticeTest ?? false,
+          isPastPaper: deck.isPastPaper ?? false,
         }}
         isEdit
       />

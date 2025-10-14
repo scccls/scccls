@@ -22,6 +22,7 @@ const deckFormSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title is too long"),
   description: z.string().max(500, "Description is too long").optional(),
   availableForPracticeTest: z.boolean().default(false),
+  isPastPaper: z.boolean().default(false),
 });
 
 type DeckFormData = z.infer<typeof deckFormSchema>;
@@ -45,9 +46,19 @@ const DeckForm: React.FC<DeckFormProps> = ({
       title: "",
       description: "",
       availableForPracticeTest: false,
+      isPastPaper: false,
       ...defaultValues,
     },
   });
+
+  // Watch isPastPaper to auto-enable practice test
+  const isPastPaper = form.watch("isPastPaper");
+  
+  React.useEffect(() => {
+    if (isPastPaper) {
+      form.setValue("availableForPracticeTest", true);
+    }
+  }, [isPastPaper, form]);
 
   return (
     <Form {...form}>
@@ -101,6 +112,30 @@ const DeckForm: React.FC<DeckFormProps> = ({
                 </FormLabel>
                 <FormDescription>
                   Allow this deck to appear in practice test options
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  disabled={isPastPaper}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="isPastPaper"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">
+                  Past Paper
+                </FormLabel>
+                <FormDescription>
+                  Questions will be presented in order (not randomized). Automatically enables practice tests.
                 </FormDescription>
               </div>
               <FormControl>

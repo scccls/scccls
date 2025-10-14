@@ -13,7 +13,7 @@ import { recordQuestionAttempt } from "@/utils/questionScoring";
 const PracticeTestSession = () => {
   const { deckId, questionCount, timed } = useParams();
   const navigate = useNavigate();
-  const { state, getAllQuestionsForDeck, dispatch } = useStudy();
+  const { state, getAllQuestionsForDeck, dispatch, getDeckById } = useStudy();
   
   const [questions, setQuestions] = useState<any[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -52,9 +52,18 @@ const PracticeTestSession = () => {
     setQuestions(prev => {
       if (prev.length > 0) return prev;
       
-      const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
-      const selected = shuffled.slice(0, parseInt(questionCount));
-      return selected;
+      const deck = getDeckById(deckId);
+      const isPastPaper = deck?.isPastPaper ?? false;
+      
+      // If it's a past paper, keep questions in order. Otherwise, shuffle them.
+      if (isPastPaper) {
+        const selected = allQuestions.slice(0, parseInt(questionCount));
+        return selected;
+      } else {
+        const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
+        const selected = shuffled.slice(0, parseInt(questionCount));
+        return selected;
+      }
     });
   }, [deckId, questionCount, getAllQuestionsForDeck, navigate]);
 
@@ -130,11 +139,19 @@ const PracticeTestSession = () => {
     setUnansweredIds([]);
     setHasTimedEnded(false);
     
-    // Re-shuffle questions
+    // Re-shuffle questions (unless it's a past paper)
+    const deck = getDeckById(deckId!);
+    const isPastPaper = deck?.isPastPaper ?? false;
     const allQuestions = getAllQuestionsForDeck(deckId!);
-    const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
-    const selected = shuffled.slice(0, parseInt(questionCount!));
-    setQuestions(selected);
+    
+    if (isPastPaper) {
+      const selected = allQuestions.slice(0, parseInt(questionCount!));
+      setQuestions(selected);
+    } else {
+      const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
+      const selected = shuffled.slice(0, parseInt(questionCount!));
+      setQuestions(selected);
+    }
   };
 
   const handleBackToPracticeTest = () => {
