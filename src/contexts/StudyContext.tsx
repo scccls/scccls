@@ -49,7 +49,8 @@ export const StudyProvider = ({ children }: { children: React.ReactNode }) => {
           description: d.description || undefined,
           parentId: d.parent_id,
           isSubdeck: d.is_subdeck,
-          availableForPracticeTest: d.available_for_practice_test || false
+          availableForPracticeTest: d.available_for_practice_test || false,
+          isPastPaper: (d as any).is_past_paper || false
         }));
 
         dispatch({ type: "SET_DECKS", payload: decks });
@@ -256,7 +257,8 @@ export const StudyProvider = ({ children }: { children: React.ReactNode }) => {
           parent_id: newDeck.parentId,
           is_subdeck: newDeck.isSubdeck,
           available_for_practice_test: parsed.deck.isPastPaper ? false : (parsed.deck.availableForPracticeTest || false),
-        });
+          is_past_paper: parsed.deck.isPastPaper || false,
+        } as any);
       }
       
       if (Array.isArray(parsed.subdecks)) {
@@ -282,7 +284,8 @@ export const StudyProvider = ({ children }: { children: React.ReactNode }) => {
               parent_id: newSubdeck.parentId,
               is_subdeck: newSubdeck.isSubdeck,
               available_for_practice_test: subdeck.availableForPracticeTest || false,
-            });
+              is_past_paper: false,
+            } as any);
           }
         }
       }
