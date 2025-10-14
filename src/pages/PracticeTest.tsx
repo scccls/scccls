@@ -124,7 +124,7 @@ const PracticeTestPage = () => {
                                   </p>
                                 </div>
                                 <Button
-                                  onClick={() => navigate(`/practice-test/session?deckId=${paper.id}&count=${questionCount}&pastPaper=true`)}
+                                  onClick={() => navigate(`/practice-test/session/${paper.id}/${questionCount}/pastPaper`)}
                                   disabled={questionCount === 0}
                                 >
                                   <Play className="h-4 w-4 mr-2" />
