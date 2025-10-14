@@ -11,15 +11,9 @@ import { CheckCircle2, XCircle } from "lucide-react";
 import { recordQuestionAttempt } from "@/utils/questionScoring";
 
 const PracticeTestSession = () => {
+  const { deckId, questionCount, timed } = useParams();
   const navigate = useNavigate();
   const { state, getAllQuestionsForDeck, dispatch } = useStudy();
-  
-  // Get URL params from search params instead of path params
-  const searchParams = new URLSearchParams(window.location.search);
-  const deckId = searchParams.get('deckId');
-  const questionCount = searchParams.get('count');
-  const timed = searchParams.get('timed');
-  const isPastPaper = searchParams.get('pastPaper') === 'true';
   
   const [questions, setQuestions] = useState<any[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -58,14 +52,8 @@ const PracticeTestSession = () => {
     setQuestions(prev => {
       if (prev.length > 0) return prev;
       
-      // For past papers, maintain original order. For practice tests, shuffle.
-      let selected;
-      if (isPastPaper) {
-        selected = allQuestions.slice(0, parseInt(questionCount));
-      } else {
-        const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
-        selected = shuffled.slice(0, parseInt(questionCount));
-      }
+      const shuffled = [...allQuestions].sort(() => 0.5 - Math.random());
+      const selected = shuffled.slice(0, parseInt(questionCount));
       return selected;
     });
   }, [deckId, questionCount, getAllQuestionsForDeck, navigate]);

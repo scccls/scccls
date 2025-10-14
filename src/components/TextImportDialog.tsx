@@ -15,26 +15,26 @@ import { useStudy } from "@/contexts/StudyContext";
 import { parseTextToDeck, parsedDeckToJSON } from "@/utils/textToDeck";
 import { FileText, ChevronDown, AlertCircle, CheckCircle2 } from "lucide-react";
 
-export const TextImportDialog = ({ isPastPaper = false }: { isPastPaper?: boolean }) => {
+export const TextImportDialog = () => {
   const [open, setOpen] = useState(false);
   const [textInput, setTextInput] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [previewData, setPreviewData] = useState<{ deckTitle: string; questionCount: number } | null>(null);
   const { importDeck } = useStudy();
 
-  const exampleText = `2024 NSW Past Paper
+  const exampleText = `My Biology Deck
 
-Which common type of spinal cord injury occurs when the head is sharply thrust back and the spine is arched backwards beyond its normal limit?
-Hyperflexion
-* Hyperextension
-Distraction
-Rotation
+What is the powerhouse of the cell?
+* Mitochondria
+Nucleus
+Ribosome
+Golgi apparatus
 
-How do you get a response in an infant?
-By rubbing the sternum with the knuckles of your hand and clapping loudly
-By tickling the feet and shouting at them
-* By placing one hand on an infant's forehead and use your other hand to gently squeeze their shoulder while talking loudly to them
-By yelling and squeezing both shoulders and hands`;
+What is photosynthesis?
+* The process by which plants convert light into energy
+The process of cell division
+The process of protein synthesis
+The breakdown of glucose`;
 
   const handlePreview = () => {
     setError(null);
@@ -59,12 +59,6 @@ By yelling and squeezing both shoulders and hands`;
   const handleImport = () => {
     try {
       const parsed = parseTextToDeck(textInput);
-      
-      // Mark as past paper if needed
-      if (isPastPaper) {
-        parsed.deck.isPastPaper = true;
-      }
-      
       const jsonString = parsedDeckToJSON(parsed);
       importDeck(jsonString);
       
@@ -88,9 +82,9 @@ By yelling and squeezing both shoulders and hands`;
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Import {isPastPaper ? "Past Paper" : "Deck"} from Text</DialogTitle>
+          <DialogTitle>Import Deck from Text</DialogTitle>
           <DialogDescription>
-            Paste your questions in a simple text format and we'll convert them to a {isPastPaper ? "past paper" : "deck"}
+            Paste your questions in a simple text format and we'll convert them to a deck
           </DialogDescription>
         </DialogHeader>
 
@@ -105,7 +99,7 @@ By yelling and squeezing both shoulders and hands`;
               <div className="rounded-md bg-muted p-4 text-sm space-y-2">
                 <p className="font-medium">Format Rules:</p>
                 <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                  <li>First line is the {isPastPaper ? "past paper" : "deck"} title</li>
+                  <li>First line is the deck title</li>
                   <li>Each question starts on its own line (no special marker needed)</li>
                   <li>Mark the correct answer with an asterisk (*)</li>
                   <li>Wrong answers start with a dash (-) or no marker</li>
@@ -116,6 +110,15 @@ By yelling and squeezing both shoulders and hands`;
                 <pre className="bg-background p-3 rounded text-xs overflow-x-auto whitespace-pre-wrap">
 {exampleText}
                 </pre>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setTextInput(exampleText)}
+                  className="mt-2"
+                >
+                  Use This Example
+                </Button>
               </div>
             </CollapsibleContent>
           </Collapsible>
@@ -126,7 +129,7 @@ By yelling and squeezing both shoulders and hands`;
             <Textarea
               value={textInput}
               onChange={(e) => setTextInput(e.target.value)}
-              placeholder="Paste your deck text here..."
+              placeholder={`${exampleText}`}
               className="min-h-[300px] font-mono text-sm"
             />
           </div>
@@ -159,7 +162,7 @@ By yelling and squeezing both shoulders and hands`;
               Preview
             </Button>
             <Button onClick={handleImport} disabled={!previewData}>
-              Import {isPastPaper ? "Past Paper" : "Deck"}
+              Import Deck
             </Button>
           </div>
         </div>
