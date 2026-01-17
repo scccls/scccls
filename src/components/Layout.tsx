@@ -8,12 +8,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Home, FileUp, Menu, FileQuestion, BookCheck } from "lucide-react";
+import { Home, FileUp, Menu, FileQuestion, BookCheck, LogOut, LogIn, User, KeyRound, Flame } from "lucide-react";
 import ImportDeckDialog from "./ImportDeckDialog";
 import { useStudy } from "@/contexts/StudyContext";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogOut, LogIn } from "lucide-react";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -79,14 +78,32 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </Button>
             </ImportDeckDialog>
             {user ? (
-              <Button
-                variant="ghost"
-                onClick={signOut}
-                className="flex items-center"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center">
+                    <User className="h-4 w-4 mr-2" />
+                    Account
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-background">
+                  <DropdownMenuItem className="flex items-center">
+                    <User className="h-4 w-4 mr-2" />
+                    Account Details
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="flex items-center">
+                    <KeyRound className="h-4 w-4 mr-2" />
+                    Reset Password
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="flex items-center">
+                    <Flame className="h-4 w-4 mr-2" />
+                    Daily Streak
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={signOut} className="flex items-center">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <Link to="/auth">
                 <Button variant="ghost" className="flex items-center">
@@ -134,10 +151,24 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   </DropdownMenuItem>
                 </ImportDeckDialog>
                 {user ? (
-                  <DropdownMenuItem onClick={signOut} className="flex items-center">
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
-                  </DropdownMenuItem>
+                  <>
+                    <DropdownMenuItem className="flex items-center">
+                      <User className="h-4 w-4 mr-2" />
+                      Account Details
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="flex items-center">
+                      <KeyRound className="h-4 w-4 mr-2" />
+                      Reset Password
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="flex items-center">
+                      <Flame className="h-4 w-4 mr-2" />
+                      Daily Streak
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={signOut} className="flex items-center">
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </>
                 ) : (
                   <DropdownMenuItem asChild>
                     <Link to="/auth" className="flex items-center">
