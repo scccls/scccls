@@ -33,9 +33,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     <div className="min-h-screen flex flex-col">
       <header className="border-b sticky top-0 z-10 bg-background">
         <div className="container flex h-16 items-center px-4 sm:px-6">
-          <Link to="/" className="flex items-center font-semibold text-2xl">
-            <BookIcon className="h-6 w-6 mr-2" />
-            <span>SCC CLS Website</span>
+          <Link to="/" className="font-semibold text-2xl">
+            SCC CLS Website
           </Link>
           
           {/* Desktop Navigation */}
@@ -159,26 +158,5 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   );
 };
 
-// Custom book icon for the logo
-const BookIcon = (props: React.SVGProps<SVGSVGElement>) => {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
-      <path d="M8 7h6" />
-      <path d="M8 11h8" />
-    </svg>
-  );
-};
 
 export default Layout;
