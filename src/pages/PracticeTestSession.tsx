@@ -8,7 +8,7 @@ import PracticeTestProgress from "@/components/PracticeTestProgress";
 import PracticeTestTimer from "@/components/PracticeTestTimer";
 import StudyResults from "@/components/StudyResults";
 import { CheckCircle2, XCircle } from "lucide-react";
-import { recordQuestionAttempt } from "@/utils/questionScoring";
+import { recordQuestionAttempt, recordTestSession } from "@/utils/questionScoring";
 
 const PracticeTestSession = () => {
   const { deckId, questionCount, timed } = useParams();
@@ -126,6 +126,11 @@ const PracticeTestSession = () => {
         dispatch({ type: "ADD_TO_QUESTION_BANK", payload: question });
       }
     });
+
+    // Record the test session for stats tracking
+    if (deckId) {
+      recordTestSession(deckId, questions.length, correct.length);
+    }
 
     setShowResults(true);
   };

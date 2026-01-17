@@ -36,6 +36,42 @@ export function calculateQuestionScore(attempts: QuestionAttempt[]): number {
 }
 
 /**
+ * Update daily activity for streak tracking
+ */
+async function updateDailyActivity(userId: string, isCorrect: boolean): Promise<void> {
+  const today = new Date().toISOString().split("T")[0];
+  
+  // Try to update existing record for today
+  const { data: existing } = await supabase
+    .from("daily_activity")
+    .select("id, questions_attempted, questions_correct")
+    .eq("user_id", userId)
+    .eq("activity_date", today)
+    .single();
+
+  if (existing) {
+    // Update existing record
+    await supabase
+      .from("daily_activity")
+      .update({
+        questions_attempted: existing.questions_attempted + 1,
+        questions_correct: existing.questions_correct + (isCorrect ? 1 : 0),
+      })
+      .eq("id", existing.id);
+  } else {
+    // Create new record for today
+    await supabase
+      .from("daily_activity")
+      .insert({
+        user_id: userId,
+        activity_date: today,
+        questions_attempted: 1,
+        questions_correct: isCorrect ? 1 : 0,
+      });
+  }
+}
+
+/**
  * Record a question attempt in the database
  */
 export async function recordQuestionAttempt(
@@ -59,6 +95,38 @@ export async function recordQuestionAttempt(
 
   if (error) {
     console.error("Error recording question attempt:", error);
+  }
+
+  // Update daily activity for streak tracking
+  await updateDailyActivity(user.id, isCorrect);
+}
+
+/**
+ * Record a completed test session
+ */
+export async function recordTestSession(
+  deckId: string,
+  totalQuestions: number,
+  correctAnswers: number
+): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    console.error("No user found when recording test session");
+    return;
+  }
+
+  const { error } = await supabase
+    .from("test_sessions")
+    .insert({
+      user_id: user.id,
+      deck_id: deckId,
+      total_questions: totalQuestions,
+      correct_answers: correctAnswers,
+    });
+
+  if (error) {
+    console.error("Error recording test session:", error);
   }
 }
 
