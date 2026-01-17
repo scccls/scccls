@@ -1,5 +1,5 @@
 
-# Welcome to your SCC CLS Platform Project
+# Welcome to your SCC CLS Website Project
 
 ## Project info
 

@@ -35,7 +35,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="container flex h-16 items-center px-4 sm:px-6">
           <Link to="/" className="flex items-center font-semibold text-2xl">
             <BookIcon className="h-6 w-6 mr-2" />
-            <span>SCC CLS Platform</span>
+            <span>SCC CLS Website</span>
           </Link>
           
           {/* Desktop Navigation */}
