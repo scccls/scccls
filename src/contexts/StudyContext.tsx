@@ -11,6 +11,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./AuthContext";
 import { getQuestionAttempts, sortQuestionsByScore } from "@/utils/questionScoring";
+import { validateDeckImport } from "@/utils/deckValidation";
 
 const initialState: StudyState = {
   decks: [],
@@ -231,19 +232,23 @@ export const StudyProvider = ({ children }: { children: React.ReactNode }) => {
 
   const importDeck = async (deckData: string) => {
     try {
-      const parsed = JSON.parse(deckData);
-      
-      if (!parsed.deck || !Array.isArray(parsed.questions)) {
-        throw new Error("Invalid deck data format");
-      }
+      // Validate input using Zod schema
+      const parsed = validateDeckImport(deckData);
       
       const idMap = new Map<string, string>();
       
-      const newDeck = {
-        ...parsed.deck,
+      const newDeck: Deck = {
         id: crypto.randomUUID(),
+        title: parsed.deck.title,
+        description: parsed.deck.description || undefined,
+        parentId: parsed.deck.parentId || null,
+        isSubdeck: parsed.deck.isSubdeck || false,
+        availableForPracticeTest: parsed.deck.availableForPracticeTest || false,
+        isPastPaper: parsed.deck.isPastPaper || false,
       };
-      idMap.set(parsed.deck.id, newDeck.id);
+      if (parsed.deck.id) {
+        idMap.set(parsed.deck.id, newDeck.id);
+      }
       
       dispatch({ type: "ADD_DECK", payload: newDeck });
       
@@ -254,21 +259,27 @@ export const StudyProvider = ({ children }: { children: React.ReactNode }) => {
           user_id: user.id,
           title: newDeck.title,
           description: newDeck.description || null,
-          parent_id: newDeck.parentId,
-          is_subdeck: newDeck.isSubdeck,
+          parent_id: newDeck.parentId || null,
+          is_subdeck: newDeck.isSubdeck || false,
           available_for_practice_test: parsed.deck.availableForPracticeTest || false,
         });
       }
       
-      if (Array.isArray(parsed.subdecks)) {
+      if (parsed.subdecks && Array.isArray(parsed.subdecks)) {
         for (const subdeck of parsed.subdecks) {
           const newId = crypto.randomUUID();
-          idMap.set(subdeck.id, newId);
+          if (subdeck.id) {
+            idMap.set(subdeck.id, newId);
+          }
           
-          const newSubdeck = {
-            ...subdeck,
+          const newSubdeck: Deck = {
             id: newId,
+            title: subdeck.title,
+            description: subdeck.description || undefined,
             parentId: subdeck.parentId ? idMap.get(subdeck.parentId) || null : null,
+            isSubdeck: subdeck.isSubdeck ?? true,
+            availableForPracticeTest: subdeck.availableForPracticeTest || false,
+            isPastPaper: subdeck.isPastPaper || false,
           };
           
           dispatch({ type: "ADD_DECK", payload: newSubdeck });
@@ -281,7 +292,7 @@ export const StudyProvider = ({ children }: { children: React.ReactNode }) => {
               title: newSubdeck.title,
               description: newSubdeck.description || null,
               parent_id: newSubdeck.parentId,
-              is_subdeck: newSubdeck.isSubdeck,
+              is_subdeck: newSubdeck.isSubdeck || true,
               available_for_practice_test: subdeck.availableForPracticeTest || false,
             });
           }
@@ -295,13 +306,13 @@ export const StudyProvider = ({ children }: { children: React.ReactNode }) => {
         const newOptions = question.options.map(option => {
           const newOptionId = crypto.randomUUID();
           optionIdMap.set(option.id, newOptionId);
-          return { ...option, id: newOptionId };
+          return { ...option, id: newOptionId, text: option.text };
         });
         
         const newQuestion = {
-          ...question,
           id: newQuestionId,
-          deckId: idMap.get(question.deckId) || newDeck.id,
+          text: question.text,
+          deckId: (question.deckId ? idMap.get(question.deckId) : null) || newDeck.id,
           options: newOptions,
           correctOptionId: optionIdMap.get(question.correctOptionId) || newOptions[0].id,
         };
@@ -326,9 +337,10 @@ export const StudyProvider = ({ children }: { children: React.ReactNode }) => {
       });
     } catch (error) {
       console.error("Import error:", error);
+      const errorMessage = error instanceof Error ? error.message : "The deck data is invalid or corrupted.";
       toast({
         title: "Import failed",
-        description: "The deck data is invalid or corrupted.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
