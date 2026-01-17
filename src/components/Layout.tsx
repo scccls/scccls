@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Home, FileUp, Menu, FileQuestion, BookCheck, LogOut, LogIn, User, KeyRound, Flame } from "lucide-react";
+import { Home, FileUp, Menu, FileQuestion, BookCheck, LogOut, LogIn, User, BarChart3 } from "lucide-react";
 import ImportDeckDialog from "./ImportDeckDialog";
 import { useStudy } from "@/contexts/StudyContext";
 import { Badge } from "@/components/ui/badge";
@@ -86,17 +86,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-background">
-                  <DropdownMenuItem className="flex items-center">
-                    <User className="h-4 w-4 mr-2" />
-                    Account Details
+                  <DropdownMenuItem asChild className="flex items-center">
+                    <Link to="/account">
+                      <User className="h-4 w-4 mr-2" />
+                      Account Details
+                    </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="flex items-center">
-                    <KeyRound className="h-4 w-4 mr-2" />
-                    Reset Password
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="flex items-center">
-                    <Flame className="h-4 w-4 mr-2" />
-                    Daily Streak
+                  <DropdownMenuItem asChild className="flex items-center">
+                    <Link to="/account/stats">
+                      <BarChart3 className="h-4 w-4 mr-2" />
+                      Account Stats
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={signOut} className="flex items-center">
                     <LogOut className="h-4 w-4 mr-2" />
@@ -152,17 +152,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </ImportDeckDialog>
                 {user ? (
                   <>
-                    <DropdownMenuItem className="flex items-center">
-                      <User className="h-4 w-4 mr-2" />
-                      Account Details
+                    <DropdownMenuItem asChild className="flex items-center">
+                      <Link to="/account">
+                        <User className="h-4 w-4 mr-2" />
+                        Account Details
+                      </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem className="flex items-center">
-                      <KeyRound className="h-4 w-4 mr-2" />
-                      Reset Password
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="flex items-center">
-                      <Flame className="h-4 w-4 mr-2" />
-                      Daily Streak
+                    <DropdownMenuItem asChild className="flex items-center">
+                      <Link to="/account/stats">
+                        <BarChart3 className="h-4 w-4 mr-2" />
+                        Account Stats
+                      </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={signOut} className="flex items-center">
                       <LogOut className="h-4 w-4 mr-2" />

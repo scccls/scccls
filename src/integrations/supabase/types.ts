@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      daily_activity: {
+        Row: {
+          activity_date: string
+          created_at: string
+          id: string
+          questions_attempted: number
+          questions_correct: number
+          user_id: string
+        }
+        Insert: {
+          activity_date?: string
+          created_at?: string
+          id?: string
+          questions_attempted?: number
+          questions_correct?: number
+          user_id: string
+        }
+        Update: {
+          activity_date?: string
+          created_at?: string
+          id?: string
+          questions_attempted?: number
+          questions_correct?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       decks: {
         Row: {
           available_for_practice_test: boolean | null
@@ -60,6 +87,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
       }
       question_attempts: {
         Row: {
@@ -150,6 +201,41 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "questions_deck_id_fkey"
+            columns: ["deck_id"]
+            isOneToOne: false
+            referencedRelation: "decks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      test_sessions: {
+        Row: {
+          completed_at: string
+          correct_answers: number
+          deck_id: string
+          id: string
+          total_questions: number
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          correct_answers: number
+          deck_id: string
+          id?: string
+          total_questions: number
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          correct_answers?: number
+          deck_id?: string
+          id?: string
+          total_questions?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_sessions_deck_id_fkey"
             columns: ["deck_id"]
             isOneToOne: false
             referencedRelation: "decks"

@@ -21,6 +21,8 @@ import PracticeTestPage from "./pages/PracticeTest";
 import PracticeTestSession from "./pages/PracticeTestSession";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
+import AccountDetails from "./pages/AccountDetails";
+import AccountStats from "./pages/AccountStats";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +48,8 @@ const App = () => (
               <Route path="/question-bank" element={<ProtectedRoute><QuestionBankPage /></ProtectedRoute>} />
               <Route path="/practice-test" element={<ProtectedRoute><PracticeTestPage /></ProtectedRoute>} />
               <Route path="/practice-test/session/:deckId/:questionCount/:timed?" element={<ProtectedRoute><PracticeTestSession /></ProtectedRoute>} />
+              <Route path="/account" element={<ProtectedRoute><AccountDetails /></ProtectedRoute>} />
+              <Route path="/account/stats" element={<ProtectedRoute><AccountStats /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Layout>

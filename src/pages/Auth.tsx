@@ -12,6 +12,7 @@ import { Session } from "@supabase/supabase-js";
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -74,9 +75,15 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!username.trim()) {
+      toast.error("Please enter a username");
+      return;
+    }
+    
     setLoading(true);
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -86,10 +93,23 @@ const Auth = () => {
 
     if (error) {
       toast.error(error.message);
-    } else {
-      toast.success("Check your email for the confirmation link!");
+      setLoading(false);
+      return;
     }
 
+    // Create profile with username if sign up was successful
+    if (data.user) {
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .insert({ user_id: data.user.id, username: username.trim() });
+
+      if (profileError) {
+        console.error("Error creating profile:", profileError);
+        // Don't show error to user as the account was created successfully
+      }
+    }
+
+    toast.success("Check your email for the confirmation link!");
     setLoading(false);
   };
 
@@ -303,6 +323,17 @@ const Auth = () => {
             
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-username">Username</Label>
+                  <Input
+                    id="signup-username"
+                    type="text"
+                    placeholder="Your username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                  />
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>
                   <Input
