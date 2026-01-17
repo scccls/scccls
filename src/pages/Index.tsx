@@ -164,7 +164,7 @@ const IndexPage = () => {
 
       {!user ? (
         <div className="py-12 text-center">
-          <h2 className="text-xl font-medium mb-4">Welcome to SCC CLS Platform!</h2>
+          <h2 className="text-xl font-medium mb-4">Welcome to SCC CLS Website!</h2>
           <p className="text-muted-foreground mb-6">
             Sign in to create study decks, organize materials, and practice questions across all your devices.
           </p>
