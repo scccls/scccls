@@ -183,7 +183,7 @@ const AccountStats = () => {
       <Card>
         <CardHeader>
           
-          <CardDescription>Keep learning every day to build your streak!</CardDescription>
+          
         </CardHeader>
         <CardContent>
           
