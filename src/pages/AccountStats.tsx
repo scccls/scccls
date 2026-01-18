@@ -120,7 +120,7 @@ const AccountStats = () => {
   const statCards = [
     {
       title: "Daily Streak",
-      subtitle: "(10 questions required)",
+      subtitle: "(10 question attempts required)",
       value: stats.dailyStreak,
       suffix: stats.dailyStreak === 1 ? "day" : "days",
       icon: Flame,
