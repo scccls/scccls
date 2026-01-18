@@ -180,10 +180,7 @@ const AccountStats = () => {
           </Card>)}
       </div>
 
-      <Card>
-        
-        
-      </Card>
+      
     </div>;
 };
 export default AccountStats;
