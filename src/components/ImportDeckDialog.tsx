@@ -186,7 +186,7 @@ What year was SLSA established?
 1895
 1923
 
-What is the main purpose?
+What is the main purpose of SLSA?
 * Beach safety
 Surfing competitions
 Beach cleaning
