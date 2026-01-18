@@ -120,6 +120,7 @@ const AccountStats = () => {
   const statCards = [
     {
       title: "Daily Streak",
+      subtitle: "(10 questions required)",
       value: stats.dailyStreak,
       suffix: stats.dailyStreak === 1 ? "day" : "days",
       icon: Flame,
@@ -135,20 +136,20 @@ const AccountStats = () => {
       bgColor: "bg-primary/10",
     },
     {
-      title: "Questions Attempted",
-      value: stats.questionsAttempted,
-      suffix: "",
-      icon: Target,
-      color: "text-blue-500",
-      bgColor: "bg-blue-500/10",
-    },
-    {
       title: "Questions Correct",
       value: stats.questionsCorrect,
       suffix: "",
       icon: CheckCircle,
       color: "text-green-500",
       bgColor: "bg-green-500/10",
+    },
+    {
+      title: "Questions Attempted",
+      value: stats.questionsAttempted,
+      suffix: "",
+      icon: Target,
+      color: "text-blue-500",
+      bgColor: "bg-blue-500/10",
     },
     {
       title: "Tests Completed",
@@ -184,7 +185,10 @@ const AccountStats = () => {
         {statCards.map((stat) => (
           <Card key={stat.title}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+              <div>
+                <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+                {stat.subtitle && <p className="text-xs text-muted-foreground">{stat.subtitle}</p>}
+              </div>
               <div className={`p-2 rounded-full ${stat.bgColor}`}>
                 <stat.icon className={`h-4 w-4 ${stat.color}`} />
               </div>
