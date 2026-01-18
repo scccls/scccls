@@ -60,11 +60,12 @@ const AccountStats = () => {
 
       const testsCompleted = tests?.length || 0;
 
-      // Calculate daily streak
+      // Calculate daily streak (only days with 10+ questions count)
       const { data: activities, error: activitiesError } = await supabase
         .from("daily_activity")
-        .select("activity_date")
+        .select("activity_date, questions_attempted")
         .eq("user_id", user.id)
+        .gte("questions_attempted", 10)
         .order("activity_date", { ascending: false });
 
       if (activitiesError) {
@@ -126,6 +127,14 @@ const AccountStats = () => {
       bgColor: "bg-orange-500/10",
     },
     {
+      title: "Overall Accuracy",
+      value: stats.overallPercentage,
+      suffix: "%",
+      icon: Percent,
+      color: "text-primary",
+      bgColor: "bg-primary/10",
+    },
+    {
       title: "Questions Attempted",
       value: stats.questionsAttempted,
       suffix: "",
@@ -148,14 +157,6 @@ const AccountStats = () => {
       icon: FileText,
       color: "text-purple-500",
       bgColor: "bg-purple-500/10",
-    },
-    {
-      title: "Overall Accuracy",
-      value: stats.overallPercentage,
-      suffix: "%",
-      icon: Percent,
-      color: "text-primary",
-      bgColor: "bg-primary/10",
     },
   ];
 
@@ -205,7 +206,7 @@ const AccountStats = () => {
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">
-            Your daily streak increases when you study or complete tests on consecutive days. 
+            Your daily streak increases when you answer at least 10 questions on consecutive days. 
             Missing a day will reset your streak to zero. Stay consistent to build an impressive streak!
           </p>
         </CardContent>
