@@ -41,13 +41,13 @@ export function calculateQuestionScore(attempts: QuestionAttempt[]): number {
 async function updateDailyActivity(userId: string, isCorrect: boolean): Promise<void> {
   const today = new Date().toISOString().split("T")[0];
   
-  // Try to update existing record for today
+  // Try to get existing record for today
   const { data: existing } = await supabase
     .from("daily_activity")
     .select("id, questions_attempted, questions_correct")
     .eq("user_id", userId)
     .eq("activity_date", today)
-    .single();
+    .maybeSingle();
 
   if (existing) {
     // Update existing record
