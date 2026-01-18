@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BookCheck, Play } from "lucide-react";
@@ -7,37 +6,30 @@ import { Button } from "@/components/ui/button";
 import { useStudy } from "@/contexts/StudyContext";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import PracticeTestConfig from "@/components/PracticeTestConfig";
-
 const PracticeTestPage = () => {
   const navigate = useNavigate();
-  const { state } = useStudy();
+  const {
+    state
+  } = useStudy();
   const [showConfig, setShowConfig] = useState(false);
-
   const startPracticeTest = () => {
     setShowConfig(true);
   };
-
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Practice Test</h1>
-          <p className="text-muted-foreground mt-1">
-            Take timed practice tests to assess your knowledge
-          </p>
+          
         </div>
       </div>
 
-      {!showConfig ? (
-        <Card>
+      {!showConfig ? <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
               <BookCheck className="h-5 w-5 mr-2" />
               Practice Test
             </CardTitle>
-            <CardDescription>
-              Take a randomized practice test from your existing decks
-            </CardDescription>
+            
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -47,27 +39,18 @@ const PracticeTestPage = () => {
                 and any questions you answer incorrectly will be added to your Question Bank for further review.
               </p>
               
-              {state.decks.length === 0 ? (
-                <Alert>
+              {state.decks.length === 0 ? <Alert>
                   <AlertTitle>No decks available</AlertTitle>
                   <AlertDescription>
                     Create at least one deck with questions before attempting a practice test.
                   </AlertDescription>
-                </Alert>
-              ) : (
-                <Button onClick={startPracticeTest} className="w-full sm:w-auto">
+                </Alert> : <Button onClick={startPracticeTest} className="w-full sm:w-auto">
                   <Play className="h-4 w-4 mr-2" />
                   Attempt Practice Test
-                </Button>
-              )}
+                </Button>}
             </div>
           </CardContent>
-        </Card>
-      ) : (
-        <PracticeTestConfig onCancel={() => setShowConfig(false)} />
-      )}
-    </div>
-  );
+        </Card> : <PracticeTestConfig onCancel={() => setShowConfig(false)} />}
+    </div>;
 };
-
 export default PracticeTestPage;
