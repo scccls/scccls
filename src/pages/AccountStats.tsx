@@ -74,31 +74,35 @@ const AccountStats = () => {
 
       let dailyStreak = 0;
       if (activities && activities.length > 0) {
+        // Get today's date in YYYY-MM-DD format (local timezone)
         const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
         
-        let checkDate = new Date(today);
+        // Get yesterday's date string
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
         
-        // Check if user was active today or yesterday to start counting
-        const firstActivityDate = new Date(activities[0].activity_date);
-        firstActivityDate.setHours(0, 0, 0, 0);
+        // Create a Set of activity dates (these are already YYYY-MM-DD strings from the database)
+        const activityDates = new Set(activities.map((a) => a.activity_date));
         
-        const diffFromToday = Math.floor((today.getTime() - firstActivityDate.getTime()) / (1000 * 60 * 60 * 24));
-        
-        if (diffFromToday <= 1) {
-          // Start from today or yesterday
-          if (diffFromToday === 1) {
-            checkDate = new Date(today);
+        // Streak only counts if user was active today or yesterday
+        if (activityDates.has(todayStr) || activityDates.has(yesterdayStr)) {
+          // Start checking from today or yesterday (whichever has activity)
+          let checkDate = new Date(today);
+          if (!activityDates.has(todayStr)) {
             checkDate.setDate(checkDate.getDate() - 1);
           }
           
-          const activityDates = new Set(
-            activities.map((a) => new Date(a.activity_date).toISOString().split("T")[0])
-          );
-          
-          while (activityDates.has(checkDate.toISOString().split("T")[0])) {
-            dailyStreak++;
-            checkDate.setDate(checkDate.getDate() - 1);
+          // Count consecutive days
+          while (true) {
+            const checkStr = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
+            if (activityDates.has(checkStr)) {
+              dailyStreak++;
+              checkDate.setDate(checkDate.getDate() - 1);
+            } else {
+              break;
+            }
           }
         }
       }
