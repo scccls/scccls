@@ -181,13 +181,8 @@ const AccountStats = () => {
       </div>
 
       <Card>
-        <CardHeader>
-          
-          
-        </CardHeader>
-        <CardContent>
-          
-        </CardContent>
+        
+        
       </Card>
     </div>;
 };
