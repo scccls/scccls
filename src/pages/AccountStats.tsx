@@ -138,14 +138,6 @@ const AccountStats = () => {
     color: "text-primary",
     bgColor: "bg-primary/10"
   }, {
-    title: "Avg Response Time",
-    value: formatResponseTime(stats.averageResponseTimeMs),
-    suffix: "",
-    icon: Clock,
-    color: "text-cyan-500",
-    bgColor: "bg-cyan-500/10",
-    isText: true
-  }, {
     title: "Questions Correct",
     value: stats.questionsCorrect,
     suffix: "",
@@ -166,6 +158,14 @@ const AccountStats = () => {
     icon: FileText,
     color: "text-purple-500",
     bgColor: "bg-purple-500/10"
+  }, {
+    title: "Avg Response Time",
+    value: formatResponseTime(stats.averageResponseTimeMs),
+    suffix: "",
+    icon: Clock,
+    color: "text-cyan-500",
+    bgColor: "bg-cyan-500/10",
+    isText: true
   }];
   if (loading) {
     return <div className="flex justify-center items-center min-h-[50vh]">
