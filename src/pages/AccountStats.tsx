@@ -4,13 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Flame, Target, CheckCircle, FileText, Percent } from "lucide-react";
+import { ArrowLeft, Flame, Target, CheckCircle, FileText, Percent, Clock } from "lucide-react";
 interface Stats {
   dailyStreak: number;
   questionsAttempted: number;
   questionsCorrect: number;
   testsCompleted: number;
   overallPercentage: number;
+  averageResponseTimeMs: number | null;
 }
 const AccountStats = () => {
   const {
@@ -22,7 +23,8 @@ const AccountStats = () => {
     questionsAttempted: 0,
     questionsCorrect: 0,
     testsCompleted: 0,
-    overallPercentage: 0
+    overallPercentage: 0,
+    averageResponseTimeMs: null
   });
   const [loading, setLoading] = useState(true);
   useEffect(() => {
@@ -34,13 +36,19 @@ const AccountStats = () => {
       const {
         data: attempts,
         error: attemptsError
-      } = await supabase.from("question_attempts").select("is_correct").eq("user_id", user.id);
+      } = await supabase.from("question_attempts").select("is_correct, response_time_ms").eq("user_id", user.id);
       if (attemptsError) {
         console.error("Error fetching attempts:", attemptsError);
       }
       const questionsAttempted = attempts?.length || 0;
       const questionsCorrect = attempts?.filter(a => a.is_correct).length || 0;
       const overallPercentage = questionsAttempted > 0 ? Math.round(questionsCorrect / questionsAttempted * 100) : 0;
+      
+      // Calculate average response time
+      const attemptsWithTime = attempts?.filter(a => a.response_time_ms !== null) || [];
+      const averageResponseTimeMs = attemptsWithTime.length > 0 
+        ? attemptsWithTime.reduce((sum, a) => sum + (a.response_time_ms || 0), 0) / attemptsWithTime.length
+        : null;
 
       // Fetch test sessions
       const {
@@ -101,12 +109,19 @@ const AccountStats = () => {
         questionsAttempted,
         questionsCorrect,
         testsCompleted,
-        overallPercentage
+        overallPercentage,
+        averageResponseTimeMs
       });
       setLoading(false);
     };
     fetchStats();
   }, [user]);
+  const formatResponseTime = (ms: number | null) => {
+    if (ms === null) return "No data";
+    if (ms >= 60000) return `${(ms / 60000).toFixed(1)} min`;
+    return `${(ms / 1000).toFixed(1)} sec`;
+  };
+
   const statCards = [{
     title: "Daily Streak",
     subtitle: "(10 question attempts required)",
@@ -122,6 +137,14 @@ const AccountStats = () => {
     icon: Percent,
     color: "text-primary",
     bgColor: "bg-primary/10"
+  }, {
+    title: "Avg Response Time",
+    value: formatResponseTime(stats.averageResponseTimeMs),
+    suffix: "",
+    icon: Clock,
+    color: "text-cyan-500",
+    bgColor: "bg-cyan-500/10",
+    isText: true
   }, {
     title: "Questions Correct",
     value: stats.questionsCorrect,
@@ -173,8 +196,12 @@ const AccountStats = () => {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">
-                {stat.value}
-                {stat.suffix && <span className="text-lg ml-1 text-muted-foreground">{stat.suffix}</span>}
+                {(stat as any).isText ? stat.value : (
+                  <>
+                    {stat.value}
+                    {stat.suffix && <span className="text-lg ml-1 text-muted-foreground">{stat.suffix}</span>}
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>)}

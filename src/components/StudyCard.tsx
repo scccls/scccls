@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 interface StudyCardProps {
   question: Question;
-  onAnswer: (questionId: string, selectedOptionId: string) => void;
+  onAnswer: (questionId: string, selectedOptionId: string, responseTimeMs: number) => void;
   onNext?: () => void; // Optional callback for moving to next question
   onCorrectAnswer?: (questionId: string) => void; // Optional callback for handling correct answers
   hideCorrectAnswer?: boolean; // New prop to hide correct answer indication
@@ -27,12 +27,14 @@ const StudyCard: React.FC<StudyCardProps> = ({
   const [hasAnswered, setHasAnswered] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [shuffledOptions, setShuffledOptions] = useState(question.options);
+  const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
 
   // Reset state when question changes and shuffle options
   useEffect(() => {
     setSelectedOption(null);
     setHasAnswered(false);
     setIsCorrect(false);
+    setQuestionStartTime(Date.now());
     // Shuffle options randomly
     setShuffledOptions([...question.options].sort(() => Math.random() - 0.5));
   }, [question.id]);
@@ -44,7 +46,8 @@ const StudyCard: React.FC<StudyCardProps> = ({
 
   const handleSubmit = () => {
     if (!selectedOption || hasAnswered) return;
-    onAnswer(question.id, selectedOption); // Submit the answer to context
+    const responseTimeMs = Date.now() - questionStartTime;
+    onAnswer(question.id, selectedOption, responseTimeMs); // Submit the answer to context
     setHasAnswered(true);
     
     // Store whether the answer is correct

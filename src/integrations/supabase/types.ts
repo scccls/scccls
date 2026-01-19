@@ -118,6 +118,7 @@ export type Database = {
           id: string
           is_correct: boolean
           question_id: string
+          response_time_ms: number | null
           user_id: string
         }
         Insert: {
@@ -125,6 +126,7 @@ export type Database = {
           id?: string
           is_correct: boolean
           question_id: string
+          response_time_ms?: number | null
           user_id: string
         }
         Update: {
@@ -132,6 +134,7 @@ export type Database = {
           id?: string
           is_correct?: boolean
           question_id?: string
+          response_time_ms?: number | null
           user_id?: string
         }
         Relationships: [
