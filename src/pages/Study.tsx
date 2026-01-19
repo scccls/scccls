@@ -79,14 +79,14 @@ const StudyPage = () => {
     );
   }
   
-  const handleAnswer = (questionId: string, selectedOptionId: string) => {
+  const handleAnswer = (questionId: string, selectedOptionId: string, responseTimeMs: number) => {
     answerQuestion(questionId, selectedOptionId);
     
-    // Record the attempt for scoring
+    // Record the attempt for scoring with response time
     const question = session.questions.find(q => q.id === questionId);
     if (question) {
       const isCorrect = question.correctOptionId === selectedOptionId;
-      recordQuestionAttempt(questionId, isCorrect);
+      recordQuestionAttempt(questionId, isCorrect, responseTimeMs);
     }
   };
 

@@ -18,6 +18,7 @@ const PracticeTestSession = () => {
   const [questions, setQuestions] = useState<any[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [responseTimes, setResponseTimes] = useState<Record<string, number>>({});
   const [showResults, setShowResults] = useState(false);
   const [incorrectIds, setIncorrectIds] = useState<string[]>([]);
   const [correctIds, setCorrectIds] = useState<string[]>([]);
@@ -67,10 +68,14 @@ const PracticeTestSession = () => {
     });
   }, [deckId, questionCount, getAllQuestionsForDeck, navigate]);
 
-  const handleAnswer = (questionId: string, selectedOptionId: string) => {
+  const handleAnswer = (questionId: string, selectedOptionId: string, responseTimeMs: number) => {
     setAnswers(prev => ({
       ...prev,
       [questionId]: selectedOptionId
+    }));
+    setResponseTimes(prev => ({
+      ...prev,
+      [questionId]: responseTimeMs
     }));
   };
 
@@ -100,6 +105,7 @@ const PracticeTestSession = () => {
     // Evaluate all answers and record attempts
     questions.forEach(question => {
       const selectedOption = answers[question.id];
+      const responseTime = responseTimes[question.id];
       if (!selectedOption) {
         // Unanswered - count towards score but don't track or add to bank
         unanswered.push(question.id);
@@ -107,11 +113,11 @@ const PracticeTestSession = () => {
       } else if (selectedOption !== question.correctOptionId) {
         // Incorrectly answered - track and add to bank
         incorrect.push(question.id);
-        recordQuestionAttempt(question.id, false);
+        recordQuestionAttempt(question.id, false, responseTime);
       } else {
         // Correctly answered - track
         correct.push(question.id);
-        recordQuestionAttempt(question.id, true);
+        recordQuestionAttempt(question.id, true, responseTime);
       }
     });
 
@@ -137,6 +143,7 @@ const PracticeTestSession = () => {
 
   const handleRestart = () => {
     setAnswers({});
+    setResponseTimes({});
     setCurrentIndex(0);
     setShowResults(false);
     setIncorrectIds([]);

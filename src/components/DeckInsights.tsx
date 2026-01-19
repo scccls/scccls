@@ -8,7 +8,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { BarChart3 } from "lucide-react";
+import { BarChart3, Clock } from "lucide-react";
 import { getQuestionAttempts, calculateQuestionScore, QuestionAttempt } from "@/utils/questionScoring";
 import { Question } from "@/types/StudyTypes";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,6 +23,7 @@ interface InsightsData {
   accuracyPercent: number;
   completionPercent: number;
   masteryPercent: number;
+  averageResponseTimeMs: number | null;
 }
 
 export const DeckInsights = ({ questions }: DeckInsightsProps) => {
@@ -36,6 +37,7 @@ export const DeckInsights = ({ questions }: DeckInsightsProps) => {
         accuracyPercent: 0,
         completionPercent: 0,
         masteryPercent: 0,
+        averageResponseTimeMs: null,
       });
       return;
     }
@@ -50,6 +52,8 @@ export const DeckInsights = ({ questions }: DeckInsightsProps) => {
     let totalAttempts = 0;
     let totalCompletion = 0;
     let masteryCount = 0;
+    let totalResponseTime = 0;
+    let responseTimeCount = 0;
 
     for (const question of questions) {
       const attempts = attemptsByQuestion.get(question.id) || [];
@@ -70,18 +74,28 @@ export const DeckInsights = ({ questions }: DeckInsightsProps) => {
       if (score === 1) {
         masteryCount++;
       }
+
+      // Calculate average response time from attempts with response_time_ms
+      for (const attempt of attempts) {
+        if (attempt.response_time_ms !== null && attempt.response_time_ms !== undefined) {
+          totalResponseTime += attempt.response_time_ms;
+          responseTimeCount++;
+        }
+      }
     }
 
     const averageScore = totalScore / questions.length;
     const accuracyPercent = totalAttempts > 0 ? (totalCorrect / totalAttempts) * 100 : 0;
     const completionPercent = totalCompletion / questions.length;
     const masteryPercent = (masteryCount / questions.length) * 100;
+    const averageResponseTimeMs = responseTimeCount > 0 ? totalResponseTime / responseTimeCount : null;
 
     setInsights({
       averageScore,
       accuracyPercent,
       completionPercent,
       masteryPercent,
+      averageResponseTimeMs,
     });
     setIsLoading(false);
   };
@@ -157,6 +171,26 @@ export const DeckInsights = ({ questions }: DeckInsightsProps) => {
                   {insights.masteryPercent.toFixed(1)}%
                 </div>
                 <Progress value={insights.masteryPercent} className="mt-2" />
+              </CardContent>
+            </Card>
+
+            <Card className="md:col-span-2">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  Average Response Time
+                </CardTitle>
+                <CardDescription>Average time taken to answer each question</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">
+                  {insights.averageResponseTimeMs !== null 
+                    ? insights.averageResponseTimeMs >= 60000
+                      ? `${(insights.averageResponseTimeMs / 60000).toFixed(1)} min`
+                      : `${(insights.averageResponseTimeMs / 1000).toFixed(1)} sec`
+                    : "No data yet"
+                  }
+                </div>
               </CardContent>
             </Card>
           </div>

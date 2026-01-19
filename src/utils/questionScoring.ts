@@ -6,6 +6,7 @@ export type QuestionAttempt = {
   question_id: string;
   is_correct: boolean;
   created_at: string;
+  response_time_ms: number | null;
 };
 
 /**
@@ -76,7 +77,8 @@ async function updateDailyActivity(userId: string, isCorrect: boolean): Promise<
  */
 export async function recordQuestionAttempt(
   questionId: string,
-  isCorrect: boolean
+  isCorrect: boolean,
+  responseTimeMs?: number
 ): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser();
   
@@ -91,6 +93,7 @@ export async function recordQuestionAttempt(
       user_id: user.id,
       question_id: questionId,
       is_correct: isCorrect,
+      response_time_ms: responseTimeMs ?? null,
     });
 
   if (error) {
