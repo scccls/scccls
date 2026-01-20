@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Home, FileUp, Menu, FileQuestion, BookCheck, LogOut, LogIn, User, BarChart3 } from "lucide-react";
+import { Home, FileUp, Menu, FileQuestion, BookCheck, LogOut, LogIn, User, BarChart3, Trophy } from "lucide-react";
 import ImportDeckDialog from "./ImportDeckDialog";
 import { useStudy } from "@/contexts/StudyContext";
 import { Badge } from "@/components/ui/badge";
@@ -98,6 +98,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                       Account Stats
                     </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="flex items-center">
+                    <Link to="/leaderboard">
+                      <Trophy className="h-4 w-4 mr-2" />
+                      Leaderboard
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={signOut} className="flex items-center">
                     <LogOut className="h-4 w-4 mr-2" />
                     Sign Out
@@ -162,6 +168,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                       <Link to="/account/stats">
                         <BarChart3 className="h-4 w-4 mr-2" />
                         Account Stats
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild className="flex items-center">
+                      <Link to="/leaderboard">
+                        <Trophy className="h-4 w-4 mr-2" />
+                        Leaderboard
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={signOut} className="flex items-center">
