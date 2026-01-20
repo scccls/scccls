@@ -73,6 +73,14 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  // Helper to make Supabase password error messages more concise
+  const formatPasswordError = (message: string) => {
+    if (message.includes("Password should be at least") || message.includes("Password should contain")) {
+      return "Password must be 8+ characters with lowercase, uppercase, and numbers";
+    }
+    return message;
+  };
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -92,7 +100,7 @@ const Auth = () => {
     });
 
     if (error) {
-      toast.error(error.message);
+      toast.error(formatPasswordError(error.message));
       setLoading(false);
       return;
     }

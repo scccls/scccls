@@ -23,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FolderPlus } from "lucide-react";
+import { FolderPlus, Trophy } from "lucide-react";
 import { Deck } from "@/types/StudyTypes";
 import { getQuestionAttempts } from "@/utils/questionScoring";
 import { calculateDeckMetrics, DeckMetrics } from "@/utils/deckMetrics";
@@ -139,6 +139,12 @@ const IndexPage = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">My Study Decks</h1>
         <div className="flex items-center gap-3">
+          {user && (
+            <Button variant="outline" onClick={() => navigate("/leaderboard")}>
+              <Trophy className="mr-2 h-4 w-4" />
+              Leaderboard
+            </Button>
+          )}
           {user && topLevelDecks.length > 0 && (
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-[200px]">
