@@ -23,6 +23,7 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import AccountDetails from "./pages/AccountDetails";
 import AccountStats from "./pages/AccountStats";
+import Leaderboard from "./pages/Leaderboard";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ const App = () => (
               <Route path="/practice-test/session/:deckId/:questionCount/:timed?" element={<ProtectedRoute><PracticeTestSession /></ProtectedRoute>} />
               <Route path="/account" element={<ProtectedRoute><AccountDetails /></ProtectedRoute>} />
               <Route path="/account/stats" element={<ProtectedRoute><AccountStats /></ProtectedRoute>} />
+              <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Layout>
