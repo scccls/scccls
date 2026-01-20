@@ -258,6 +258,10 @@ export type Database = {
           username: string
         }[]
       }
+      increment_daily_activity: {
+        Args: { p_is_correct: boolean; p_user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
