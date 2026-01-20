@@ -37,38 +37,16 @@ export function calculateQuestionScore(attempts: QuestionAttempt[]): number {
 }
 
 /**
- * Update daily activity for streak tracking
+ * Update daily activity for streak tracking using atomic database function
  */
 async function updateDailyActivity(userId: string, isCorrect: boolean): Promise<void> {
-  const today = new Date().toISOString().split("T")[0];
-  
-  // Try to get existing record for today
-  const { data: existing } = await supabase
-    .from("daily_activity")
-    .select("id, questions_attempted, questions_correct")
-    .eq("user_id", userId)
-    .eq("activity_date", today)
-    .maybeSingle();
+  const { error } = await supabase.rpc('increment_daily_activity', {
+    p_user_id: userId,
+    p_is_correct: isCorrect,
+  });
 
-  if (existing) {
-    // Update existing record
-    await supabase
-      .from("daily_activity")
-      .update({
-        questions_attempted: existing.questions_attempted + 1,
-        questions_correct: existing.questions_correct + (isCorrect ? 1 : 0),
-      })
-      .eq("id", existing.id);
-  } else {
-    // Create new record for today
-    await supabase
-      .from("daily_activity")
-      .insert({
-        user_id: userId,
-        activity_date: today,
-        questions_attempted: 1,
-        questions_correct: isCorrect ? 1 : 0,
-      });
+  if (error) {
+    console.error("Error updating daily activity:", error);
   }
 }
 
