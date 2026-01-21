@@ -8,6 +8,7 @@ import { ArrowLeft, Flame, Target, CheckCircle, FileText, Percent, Clock } from 
 import DailyStreakGrid from "@/components/stats/DailyStreakGrid";
 import AccuracyTrendChart from "@/components/stats/AccuracyTrendChart";
 import WeeklyBarChart from "@/components/stats/WeeklyBarChart";
+import ResponseTimeTrendChart from "@/components/stats/ResponseTimeTrendChart";
 
 interface Stats {
   dailyStreak: number;
@@ -332,7 +333,7 @@ const AccountStats = () => {
           <AccuracyTrendChart data={weeklyAverages.map(w => ({ week: w.week, accuracy: w.accuracy }))} />
         </div>
         
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2">
           <WeeklyBarChart 
             title="Questions Correct"
             data={weeklyData.map(w => ({ week: w.week, value: w.questionsCorrect }))}
@@ -349,6 +350,9 @@ const AccountStats = () => {
             bgColor="bg-blue-500/10"
             chartColor="hsl(217, 91%, 60%)"
           />
+        </div>
+        
+        <div className="grid gap-4 md:grid-cols-2">
           <WeeklyBarChart 
             title="Tests Completed"
             data={weeklyData.map(w => ({ week: w.week, value: w.testsCompleted }))}
@@ -357,6 +361,7 @@ const AccountStats = () => {
             bgColor="bg-purple-500/10"
             chartColor="hsl(270, 50%, 60%)"
           />
+          <ResponseTimeTrendChart data={weeklyAverages.map(w => ({ week: w.week, responseTime: w.responseTime }))} />
         </div>
       </div>
     </div>
