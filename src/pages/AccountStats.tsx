@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Flame, Target, CheckCircle, FileText, Percent, Clock } from "lucide-react";
 import DailyStreakGrid from "@/components/stats/DailyStreakGrid";
-import WeeklyActivityChart from "@/components/stats/WeeklyActivityChart";
-import AccuracyResponseChart from "@/components/stats/AccuracyResponseChart";
+import AccuracyTrendChart from "@/components/stats/AccuracyTrendChart";
+import WeeklyBarChart from "@/components/stats/WeeklyBarChart";
 
 interface Stats {
   dailyStreak: number;
@@ -329,10 +329,35 @@ const AccountStats = () => {
         
         <div className="grid gap-4 md:grid-cols-2">
           <DailyStreakGrid activities={dailyActivities} />
-          <WeeklyActivityChart data={weeklyData} />
+          <AccuracyTrendChart data={weeklyAverages.map(w => ({ week: w.week, accuracy: w.accuracy }))} />
         </div>
         
-        <AccuracyResponseChart data={weeklyAverages} />
+        <div className="grid gap-4 md:grid-cols-3">
+          <WeeklyBarChart 
+            title="Questions Correct"
+            data={weeklyData.map(w => ({ week: w.week, value: w.questionsCorrect }))}
+            icon={CheckCircle}
+            color="text-green-500"
+            bgColor="bg-green-500/10"
+            chartColor="hsl(142, 76%, 36%)"
+          />
+          <WeeklyBarChart 
+            title="Questions Attempted"
+            data={weeklyData.map(w => ({ week: w.week, value: w.questionsAttempted }))}
+            icon={Target}
+            color="text-blue-500"
+            bgColor="bg-blue-500/10"
+            chartColor="hsl(217, 91%, 60%)"
+          />
+          <WeeklyBarChart 
+            title="Tests Completed"
+            data={weeklyData.map(w => ({ week: w.week, value: w.testsCompleted }))}
+            icon={FileText}
+            color="text-purple-500"
+            bgColor="bg-purple-500/10"
+            chartColor="hsl(270, 50%, 60%)"
+          />
+        </div>
       </div>
     </div>
   );

@@ -71,8 +71,7 @@ const DailyStreakGrid = ({ activities }: DailyStreakGridProps) => {
             </div>
           ))}
         </div>
-        <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-          <span>4 weeks ago</span>
+        <div className="flex justify-end mt-2 text-xs text-muted-foreground">
           <span>Today</span>
         </div>
       </CardContent>
