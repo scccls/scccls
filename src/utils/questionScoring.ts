@@ -10,30 +10,58 @@ export type QuestionAttempt = {
 };
 
 /**
- * Calculate question score based on last 3 attempts
+ * Calculate the decay amount based on days since last attempt
+ * - Decays 0.01 per day
+ * - Maximum decay of 0.3 (stops after 30 days)
+ */
+export function calculateDecay(lastAttemptDate: Date | null): number {
+  if (!lastAttemptDate) {
+    // If never attempted, apply maximum decay
+    return 0.3;
+  }
+  
+  const now = new Date();
+  const daysSinceAttempt = Math.floor(
+    (now.getTime() - lastAttemptDate.getTime()) / (1000 * 60 * 60 * 24)
+  );
+  
+  // Decay 0.01 per day, max 0.3
+  return Math.min(daysSinceAttempt * 0.01, 0.3);
+}
+
+/**
+ * Calculate question score based on last 3 attempts with time-based decay
  * - Correct answer: 1/3 (0.333...)
  * - Incorrect answer: 0
  * - Not attempted: 1/10 (0.1) per unattempted slot
+ * - Time decay: 0.01 per day since last attempt, max 0.3 decay
  */
 export function calculateQuestionScore(attempts: QuestionAttempt[]): number {
   // Get last 3 attempts, sorted by most recent first
   const last3Attempts = attempts.slice(0, 3);
   
-  let score = 0;
+  let baseScore = 0;
   
-  // Calculate score from actual attempts
+  // Calculate base score from actual attempts
   for (const attempt of last3Attempts) {
     if (attempt.is_correct) {
-      score += 1/3;
+      baseScore += 1/3;
     }
     // Incorrect attempts add 0, so we don't need to do anything
   }
   
   // Add score for unattempted slots
   const unattemptedSlots = 3 - last3Attempts.length;
-  score += unattemptedSlots * (1/10);
+  baseScore += unattemptedSlots * (1/10);
   
-  return score;
+  // Apply time-based decay
+  const lastAttemptDate = last3Attempts.length > 0 
+    ? new Date(last3Attempts[0].created_at) 
+    : null;
+  const decay = calculateDecay(lastAttemptDate);
+  
+  // Final score cannot go below 0
+  return Math.max(baseScore - decay, 0);
 }
 
 /**
