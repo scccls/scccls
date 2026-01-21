@@ -90,6 +90,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          auto_send_report: boolean
+          coach_email: string | null
           created_at: string
           id: string
           updated_at: string
@@ -97,6 +99,8 @@ export type Database = {
           username: string
         }
         Insert: {
+          auto_send_report?: boolean
+          coach_email?: string | null
           created_at?: string
           id?: string
           updated_at?: string
@@ -104,6 +108,8 @@ export type Database = {
           username: string
         }
         Update: {
+          auto_send_report?: boolean
+          coach_email?: string | null
           created_at?: string
           id?: string
           updated_at?: string
