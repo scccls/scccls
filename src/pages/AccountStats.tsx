@@ -4,11 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Flame, Target, CheckCircle, FileText, Percent, Clock } from "lucide-react";
+import { ArrowLeft, Flame, Target, CheckCircle, FileText, Percent, Clock, Send } from "lucide-react";
 import DailyStreakGrid from "@/components/stats/DailyStreakGrid";
 import AccuracyTrendChart from "@/components/stats/AccuracyTrendChart";
 import WeeklyBarChart from "@/components/stats/WeeklyBarChart";
 import ResponseTimeTrendChart from "@/components/stats/ResponseTimeTrendChart";
+import SendReportDialog from "@/components/SendReportDialog";
 
 interface Stats {
   dailyStreak: number;
@@ -53,11 +54,24 @@ const AccountStats = () => {
   const [dailyActivities, setDailyActivities] = useState<DailyActivity[]>([]);
   const [weeklyData, setWeeklyData] = useState<WeeklyData[]>([]);
   const [weeklyAverages, setWeeklyAverages] = useState<WeeklyAverage[]>([]);
+  const [showReportDialog, setShowReportDialog] = useState(false);
+  const [coachEmail, setCoachEmail] = useState("");
 
   useEffect(() => {
     const fetchStats = async () => {
       if (!user) return;
       setLoading(true);
+
+      // Fetch coach email from profile
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("coach_email")
+        .eq("user_id", user.id)
+        .single();
+      
+      if (profile?.coach_email) {
+        setCoachEmail(profile.coach_email);
+      }
 
       // Calculate date 28 days ago
       const today = new Date();
@@ -288,15 +302,28 @@ const AccountStats = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold">Account Stats</h1>
-          <p className="text-muted-foreground">Track your learning progress</p>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Account Stats</h1>
+            <p className="text-muted-foreground">Track your learning progress</p>
+          </div>
         </div>
+        <Button onClick={() => setShowReportDialog(true)}>
+          <Send className="h-4 w-4 mr-2" />
+          Send Report
+        </Button>
       </div>
+
+      <SendReportDialog
+        open={showReportDialog}
+        onOpenChange={setShowReportDialog}
+        userId={user?.id || ""}
+        defaultEmail={coachEmail}
+      />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {statCards.map(stat => (
