@@ -8,13 +8,18 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { ArrowLeft, Save, Mail } from "lucide-react";
+import { ArrowLeft, Save, Mail, Bell } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 const AccountDetails = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [originalUsername, setOriginalUsername] = useState("");
+  const [coachEmail, setCoachEmail] = useState("");
+  const [originalCoachEmail, setOriginalCoachEmail] = useState("");
+  const [autoSendReport, setAutoSendReport] = useState(false);
+  const [originalAutoSendReport, setOriginalAutoSendReport] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [sendingReset, setSendingReset] = useState(false);
@@ -26,7 +31,7 @@ const AccountDetails = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from("profiles")
-        .select("username")
+        .select("username, coach_email, auto_send_report")
         .eq("user_id", user.id)
         .single();
 
@@ -35,6 +40,10 @@ const AccountDetails = () => {
       } else if (data) {
         setUsername(data.username);
         setOriginalUsername(data.username);
+        setCoachEmail(data.coach_email || "");
+        setOriginalCoachEmail(data.coach_email || "");
+        setAutoSendReport(data.auto_send_report);
+        setOriginalAutoSendReport(data.auto_send_report);
       }
       setLoading(false);
     };
@@ -42,11 +51,25 @@ const AccountDetails = () => {
     fetchProfile();
   }, [user]);
 
-  const handleSaveUsername = async () => {
+  const handleSaveProfile = async () => {
     if (!user) return;
     if (!username.trim()) {
       toast.error("Username cannot be empty");
       return;
+    }
+
+    // Validate coach email if auto-send is enabled
+    if (autoSendReport && !coachEmail.trim()) {
+      toast.error("Please enter a coach email to enable automatic reports");
+      return;
+    }
+
+    if (coachEmail.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(coachEmail.trim())) {
+        toast.error("Please enter a valid coach email address");
+        return;
+      }
     }
 
     setSaving(true);
@@ -57,26 +80,34 @@ const AccountDetails = () => {
       .eq("user_id", user.id)
       .single();
 
+    const profileData = {
+      username: username.trim(),
+      coach_email: coachEmail.trim() || null,
+      auto_send_report: autoSendReport,
+    };
+
     let error;
     if (existing) {
       const result = await supabase
         .from("profiles")
-        .update({ username: username.trim() })
+        .update(profileData)
         .eq("user_id", user.id);
       error = result.error;
     } else {
       const result = await supabase
         .from("profiles")
-        .insert({ user_id: user.id, username: username.trim() });
+        .insert({ user_id: user.id, ...profileData });
       error = result.error;
     }
 
     if (error) {
-      toast.error("Failed to save username");
+      toast.error("Failed to save profile");
       console.error(error);
     } else {
-      toast.success("Username saved successfully!");
+      toast.success("Profile saved successfully!");
       setOriginalUsername(username.trim());
+      setOriginalCoachEmail(coachEmail.trim());
+      setOriginalAutoSendReport(autoSendReport);
     }
 
     setSaving(false);
@@ -100,7 +131,9 @@ const AccountDetails = () => {
     setSendingReset(false);
   };
 
-  const hasChanges = username !== originalUsername;
+  const hasChanges = username !== originalUsername || 
+    coachEmail !== originalCoachEmail || 
+    autoSendReport !== originalAutoSendReport;
 
   if (loading) {
     return (
@@ -130,22 +163,12 @@ const AccountDetails = () => {
         <CardContent className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="username">Username</Label>
-            <div className="flex gap-2">
-              <Input
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your username"
-                className="flex-1"
-              />
-              <Button 
-                onClick={handleSaveUsername} 
-                disabled={saving || !hasChanges}
-              >
-                <Save className="h-4 w-4 mr-2" />
-                {saving ? "Saving..." : "Save"}
-              </Button>
-            </div>
+            <Input
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter your username"
+            />
           </div>
 
           <div className="space-y-2">
@@ -157,6 +180,43 @@ const AccountDetails = () => {
               className="bg-muted"
             />
             <p className="text-sm text-muted-foreground">Email cannot be changed</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Weekly Report Settings</CardTitle>
+          <CardDescription>Configure automatic weekly reports to your coach or parent</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="coach-email">Coach/Parent Email</Label>
+            <Input
+              id="coach-email"
+              type="email"
+              value={coachEmail}
+              onChange={(e) => setCoachEmail(e.target.value)}
+              placeholder="coach@example.com"
+            />
+            <p className="text-sm text-muted-foreground">
+              Your weekly study report will be sent to this email
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="auto-send">Automatic Weekly Report</Label>
+              <p className="text-sm text-muted-foreground">
+                Send report automatically every Sunday
+              </p>
+            </div>
+            <Switch
+              id="auto-send"
+              checked={autoSendReport}
+              onCheckedChange={setAutoSendReport}
+              disabled={!coachEmail.trim()}
+            />
           </div>
         </CardContent>
       </Card>
@@ -180,6 +240,15 @@ const AccountDetails = () => {
           </p>
         </CardContent>
       </Card>
+
+      {hasChanges && (
+        <div className="flex justify-end">
+          <Button onClick={handleSaveProfile} disabled={saving}>
+            <Save className="h-4 w-4 mr-2" />
+            {saving ? "Saving..." : "Save Changes"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
